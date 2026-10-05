@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-05T14:10:31+07:00",
+  "updated": "2026-10-05T14:10:52+07:00",
   "bots": {
     "danny": {
       "state": "idle",
@@ -18,8 +18,8 @@
       "task": "handoff to data"
     },
     "data": {
-      "state": "waiting",
-      "task": "menunggu data keuangan"
+      "state": "working",
+      "task": "menghitung rasio keuangan"
     },
     "aidigest": {
       "state": "idle",
