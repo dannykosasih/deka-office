@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-05T12:53:09+07:00",
+  "updated": "2026-10-05T12:54:43+07:00",
   "bots": {
     "danny": {
       "state": "idle",
@@ -18,8 +18,8 @@
       "task": "financial statements research"
     },
     "data": {
-      "state": "idle",
-      "task": "Finished AI digest slide flow"
+      "state": "waiting",
+      "task": "Financial ratio analysis (waiting on source data)"
     },
     "aidigest": {
       "state": "idle",
