@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-05T23:22:55+07:00",
+  "updated": "2026-10-05T23:54:09+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -14,8 +14,8 @@
       "task": "updating role guides"
     },
     "research": {
-      "state": "working",
-      "task": "sourcing"
+      "state": "waiting",
+      "task": "benchmarks delivered"
     },
     "data": {
       "state": "working",
