@@ -1,85 +1,85 @@
 {
-  "updated": "2026-10-05T21:30:01+07:00",
+  "updated": "2026-10-05T23:22:55+07:00",
   "bots": {
     "danny": {
-      "state": "idle",
-      "task": "No update yet"
+      "state": "working",
+      "task": "reviewing priorities"
     },
     "cos": {
-      "state": "idle",
-      "task": "bot status check done"
+      "state": "working",
+      "task": "aligning the team"
     },
     "botres": {
-      "state": "idle",
-      "task": "job desc and workflow charts done"
+      "state": "working",
+      "task": "updating role guides"
     },
     "research": {
-      "state": "idle",
-      "task": "research portrait live"
+      "state": "working",
+      "task": "sourcing"
     },
     "data": {
-      "state": "waiting",
-      "task": "menunggu data pasar"
+      "state": "working",
+      "task": "cleaning data"
     },
     "aidigest": {
-      "state": "idle",
-      "task": "No update yet"
+      "state": "working",
+      "task": "compiling AI news"
     },
     "slide": {
-      "state": "idle",
-      "task": "Deck workshop v2 selesai, menunggu review"
+      "state": "working",
+      "task": "building deck"
     },
     "social": {
-      "state": "idle",
-      "task": "next content cycle Wed"
+      "state": "working",
+      "task": "drafting caption"
     },
     "learning": {
-      "state": "idle",
-      "task": "no active materials"
+      "state": "working",
+      "task": "outlining lesson"
     },
     "thinking": {
-      "state": "waiting",
-      "task": "waiting on book direction"
+      "state": "working",
+      "task": "drafting chapter"
     },
     "brain": {
-      "state": "idle",
-      "task": "idle"
+      "state": "working",
+      "task": "sorting notes"
     },
     "travel": {
-      "state": "waiting",
-      "task": "Menunggu pilihan tiket dan hotel"
+      "state": "working",
+      "task": "comparing options"
     },
     "expense": {
-      "state": "idle",
-      "task": "on standby"
+      "state": "working",
+      "task": "logging expenses"
     },
     "health": {
-      "state": "idle",
-      "task": "ready for health log"
+      "state": "working",
+      "task": "reviewing health log"
     },
     "strategy": {
-      "state": "idle",
-      "task": "financial analysis slides done"
+      "state": "working",
+      "task": "analyzing options"
     },
     "proposal": {
-      "state": "idle",
-      "task": "Draf deck workshop menunggu review"
+      "state": "working",
+      "task": "drafting proposal"
     },
     "engineer": {
-      "state": "idle",
-      "task": "All sheet voxels assigned"
+      "state": "working",
+      "task": "polishing the office"
     },
     "design": {
-      "state": "idle",
-      "task": "next Canva build Wed"
+      "state": "working",
+      "task": "sketching visuals"
     },
     "story": {
-      "state": "idle",
-      "task": "next carousel narrative Wed"
+      "state": "working",
+      "task": "writing story"
     },
     "contentteam": {
-      "state": "idle",
-      "task": "next cycle Wed"
+      "state": "working",
+      "task": "planning content"
     }
   }
 }
