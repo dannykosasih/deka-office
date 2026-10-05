@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-05T15:26:01+07:00",
+  "updated": "2026-10-05T15:46:02+07:00",
   "bots": {
     "danny": {
       "state": "idle",
@@ -14,8 +14,8 @@
       "task": "job desc and workflow charts done"
     },
     "research": {
-      "state": "waiting",
-      "task": "workshop names locked"
+      "state": "working",
+      "task": "ID 2026 uncertainty brief"
     },
     "data": {
       "state": "waiting",
