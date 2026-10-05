@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-05T11:54:46+07:00",
+  "updated": "2026-10-05T12:53:09+07:00",
   "bots": {
     "danny": {
       "state": "idle",
@@ -14,8 +14,8 @@
       "task": "No update yet"
     },
     "research": {
-      "state": "idle",
-      "task": ""
+      "state": "working",
+      "task": "financial statements research"
     },
     "data": {
       "state": "idle",
