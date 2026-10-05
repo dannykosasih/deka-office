@@ -88,7 +88,7 @@ const STATE_COLOR = { working: 0x4ade80, waiting: 0xfbbf24, idle: 0x64748b };
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0d1220);
-scene.fog = new THREE.Fog(0x0d1220, 60, 110);
+scene.fog = new THREE.Fog(0x0d1220, 75, 140);
 const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 300);
 camera.position.set(18, 16, 28);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -103,19 +103,285 @@ document.body.appendChild(labels.domElement);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.set(0, 1, 0); controls.enableDamping = true; controls.maxPolarAngle = Math.PI / 2.2;
 
-scene.add(new THREE.HemisphereLight(0xcfe0ff, 0x1a2238, 0.9));
-const sun = new THREE.DirectionalLight(0xffffff, 1.4);
-sun.position.set(15, 30, 10); sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
-Object.assign(sun.shadow.camera, { left: -30, right: 30, top: 30, bottom: -30 });
+// --- Brighter office lighting ---
+scene.add(new THREE.HemisphereLight(0xe8f0ff, 0x2a3348, 1.35));
+const sun = new THREE.DirectionalLight(0xfff5e6, 1.85);
+sun.position.set(12, 28, 14); sun.castShadow = true;
+sun.shadow.mapSize.set(1024, 1024);
+sun.shadow.bias = -0.0002;
+Object.assign(sun.shadow.camera, { left: -32, right: 32, top: 28, bottom: -28, near: 1, far: 80 });
 scene.add(sun);
-
-const floor = new THREE.Mesh(new THREE.PlaneGeometry(56, 40), new THREE.MeshStandardMaterial({ color: 0x1b2438 }));
-floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
-const grid = new THREE.GridHelper(56, 28, 0x26324d, 0x26324d); grid.position.y = 0.01; scene.add(grid);
+const fill = new THREE.DirectionalLight(0xb8d0ff, 0.45);
+fill.position.set(-18, 20, -10); scene.add(fill);
 
 const mat = c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.7 });
 const desks = {}, clickable = [];
+
+const FLOOR_W = 56, FLOOR_D = 40, WALL_H = 3.2, WALL_T = 0.28;
+const HALF_W = FLOOR_W / 2, HALF_D = FLOOR_D / 2;
+
+function addBox(w, h, d, color, x, y, z, opts = {}) {
+  const m = new THREE.Mesh(
+    new THREE.BoxGeometry(w, h, d),
+    new THREE.MeshStandardMaterial({
+      color, roughness: opts.roughness ?? 0.75, metalness: opts.metalness ?? 0.05,
+      transparent: !!opts.opacity, opacity: opts.opacity ?? 1, emissive: opts.emissive ?? 0x000000,
+      emissiveIntensity: opts.emissiveIntensity ?? 0
+    })
+  );
+  m.position.set(x, y, z);
+  if (opts.rotY) m.rotation.y = opts.rotY;
+  m.castShadow = opts.cast !== false;
+  m.receiveShadow = opts.receive !== false;
+  scene.add(m);
+  return m;
+}
+
+function buildFloor() {
+  // Warm wood-tone base floor (lighter so zone rugs read clearly)
+  const floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(FLOOR_W, FLOOR_D),
+    new THREE.MeshStandardMaterial({ color: 0xc4a574, roughness: 0.85, metalness: 0.02 })
+  );
+  floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+  // Subtle plank lines via faint grid
+  const grid = new THREE.GridHelper(FLOOR_W, 28, 0xa8885a, 0xb89668);
+  grid.position.y = 0.012;
+  (Array.isArray(grid.material) ? grid.material : [grid.material]).forEach(m => { m.transparent = true; m.opacity = 0.28; });
+  scene.add(grid);
+  // Thin skirting boards along outer walls (inside face)
+  const skirtH = 0.18, skirtT = 0.08, skirtC = 0x8b7355;
+  addBox(FLOOR_W - 0.4, skirtH, skirtT, skirtC, 0, skirtH / 2, -HALF_D + WALL_T + 0.04, { cast: false });
+  addBox(FLOOR_W - 0.4, skirtH, skirtT, skirtC, 0, skirtH / 2, HALF_D - WALL_T - 0.04, { cast: false });
+  addBox(skirtT, skirtH, FLOOR_D - 0.4, skirtC, -HALF_W + WALL_T + 0.04, skirtH / 2, 0, { cast: false });
+  addBox(skirtT, skirtH, FLOOR_D - 0.4, skirtC, HALF_W - WALL_T - 0.04, skirtH / 2, 0, { cast: false });
+}
+
+function buildPerimeterWalls() {
+  const wallC = 0xe8e4dc, trimC = 0xd4cfc4;
+  // North wall (z = -HALF_D) — solid
+  addBox(FLOOR_W, WALL_H, WALL_T, wallC, 0, WALL_H / 2, -HALF_D);
+  // South wall with entrance doorway centered (~3.2 wide)
+  const doorW = 3.4, sideW = (FLOOR_W - doorW) / 2;
+  addBox(sideW, WALL_H, WALL_T, wallC, -HALF_W + sideW / 2, WALL_H / 2, HALF_D);
+  addBox(sideW, WALL_H, WALL_T, wallC, HALF_W - sideW / 2, WALL_H / 2, HALF_D);
+  // Door header / lintel
+  addBox(doorW, 0.55, WALL_T, trimC, 0, WALL_H - 0.275, HALF_D);
+  // East / West walls — solid
+  addBox(WALL_T, WALL_H, FLOOR_D, wallC, -HALF_W, WALL_H / 2, 0);
+  addBox(WALL_T, WALL_H, FLOOR_D, wallC, HALF_W, WALL_H / 2, 0);
+  // Glass door ajar at main entrance (south)
+  const door = addBox(1.5, 2.55, 0.08, 0xa8c8e8, -0.55, 1.35, HALF_D - 0.15, {
+    opacity: 0.45, roughness: 0.2, metalness: 0.3, cast: false
+  });
+  door.rotation.y = -0.55; // ajar
+  // Door frame posts
+  addBox(0.12, 2.7, 0.18, 0x6b5b4a, -doorW / 2, 1.35, HALF_D);
+  addBox(0.12, 2.7, 0.18, 0x6b5b4a, doorW / 2, 1.35, HALF_D);
+  // Entrance mat
+  addBox(2.8, 0.04, 1.4, 0x3d4a5c, 0, 0.03, HALF_D - 1.2, { cast: false, roughness: 0.95 });
+}
+
+function buildLowPartitions() {
+  // Open-plan: low half-walls (~1.15) between the 6 zones — do NOT block OrbitControls view
+  const h = 1.15, t = 0.18, panelC = 0xdde3ee, railC = 0x8a94a8;
+  // Vertical divider along x=0 (between L|R columns of zones), with gaps at corridors
+  // North row (z ~ -7): gap between Leadership / Research / Engineering
+  // Leave walkway gaps ~2.5 wide at x=±6.5 around zone boundaries
+  function partitionX(x, z0, z1) {
+    const len = z1 - z0, mid = (z0 + z1) / 2;
+    addBox(t, h, len, panelC, x, h / 2, mid, { cast: true });
+    addBox(t + 0.04, 0.06, len, railC, x, h + 0.03, mid, { cast: false });
+  }
+  function partitionZ(z, x0, x1) {
+    const len = x1 - x0, mid = (x0 + x1) / 2;
+    addBox(len, h, t, panelC, mid, h / 2, z, { cast: true });
+    addBox(len, 0.06, t + 0.04, railC, mid, h + 0.03, z, { cast: false });
+  }
+  // Between north and south zones (z=0), leave center corridor openings
+  partitionZ(0, -HALF_W + 1.5, -7.5);   // west segment
+  partitionZ(0, -5.0, 5.0);             // center segment (short)
+  partitionZ(0, 7.5, HALF_W - 1.5);     // east segment
+  // Between Leadership | Research (x=-6.5, north)
+  partitionX(-6.5, -HALF_D + 1.2, -2.2);
+  // Between Research | Engineering (x=6.5, north)
+  partitionX(6.5, -HALF_D + 1.2, -2.2);
+  // Between Content | Personal (x=-6.5, south)
+  partitionX(-6.5, 2.2, HALF_D - 1.2);
+  // Between Personal | Project Teams (x=6.5, south)
+  partitionX(6.5, 2.2, HALF_D - 1.2);
+  // Frosted glass panel tops for a modern office feel (very low opacity)
+  [[-6.5, -7], [6.5, -7], [-6.5, 7], [6.5, 7]].forEach(([x, z]) => {
+    addBox(0.06, 0.55, 3.2, 0xc5d4e8, x, h + 0.35, z, { opacity: 0.35, roughness: 0.15, metalness: 0.2, cast: false });
+  });
+}
+
+function addCeilingLight(x, z, color = 0xfff2dd, intensity = 1.1) {
+  // Fixture housing
+  addBox(1.6, 0.08, 0.5, 0xe8e8e8, x, WALL_H - 0.12, z, { cast: false, emissive: 0xfff5e0, emissiveIntensity: 0.35 });
+  const pl = new THREE.PointLight(color, intensity, 18, 2);
+  pl.position.set(x, WALL_H - 0.35, z);
+  pl.castShadow = false; // perf: only sun casts shadows
+  scene.add(pl);
+}
+
+function buildLights() {
+  // One warm ceiling fixture per zone + a few corridor accents
+  ZONES.forEach(z => addCeilingLight(z.x, z.z, 0xfff0d8, 1.25));
+  addCeilingLight(0, 0, 0xe8f0ff, 0.7);           // center corridor
+  addCeilingLight(0, HALF_D - 3, 0xfff5e6, 0.85); // near entrance
+  // Glowing panel above Engineering
+  addBox(4.5, 0.06, 1.2, 0x22d3ee, 13, WALL_H - 0.08, -7, {
+    cast: false, emissive: 0x22d3ee, emissiveIntensity: 0.7, roughness: 0.4, metalness: 0.1
+  });
+  const eng = new THREE.PointLight(0xaef6ff, 1.4, 16, 2);
+  eng.position.set(13, WALL_H - 0.5, -7); scene.add(eng);
+}
+
+function makePlant(x, z, scale = 1) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.scale.setScalar(scale);
+  const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.22, 0.42, 10), mat(0x8b5a3c));
+  pot.position.y = 0.21; pot.castShadow = true; g.add(pot);
+  const dirt = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.06, 10), mat(0x3d2b1f));
+  dirt.position.y = 0.42; g.add(dirt);
+  const leafMat = mat(0x3d8b5a);
+  [[0, 0.85, 0, 0.38], [0.18, 0.7, 0.12, 0.28], [-0.15, 0.72, -0.1, 0.26], [0.05, 1.05, -0.08, 0.22]].forEach(([lx, ly, lz, r]) => {
+    const leaf = new THREE.Mesh(new THREE.SphereGeometry(r, 10, 8), leafMat);
+    leaf.position.set(lx, ly, lz); leaf.castShadow = true; g.add(leaf);
+  });
+  scene.add(g); return g;
+}
+
+function makeWallArt(x, y, z, w, h, tint, facing = "s") {
+  // Frame + tinted "picture" on outer or partition-facing walls
+  const depth = 0.06;
+  const frame = addBox(w + 0.12, h + 0.12, depth, 0x5c4a32, x, y, z, { cast: false });
+  const pic = addBox(w, h, 0.03, tint, x, y, z + (facing === "s" ? 0.04 : facing === "n" ? -0.04 : 0), {
+    cast: false, emissive: tint, emissiveIntensity: 0.15, roughness: 0.55
+  });
+  if (facing === "e") { frame.position.x = x; pic.position.set(x - 0.04, y, z); }
+  if (facing === "w") { frame.position.x = x; pic.position.set(x + 0.04, y, z); }
+  if (facing === "n") pic.position.z = z - 0.04;
+  return pic;
+}
+
+function makeCabinet(x, z, rotY = 0) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rotY;
+  const body = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.35, 0.55), mat(0x4a5568));
+  body.position.y = 0.675; body.castShadow = true; body.receiveShadow = true; g.add(body);
+  for (let i = 0; i < 3; i++) {
+    const drawer = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.32, 0.04), mat(0x3d4658));
+    drawer.position.set(0, 0.35 + i * 0.38, 0.28); g.add(drawer);
+    const handle = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.04, 0.04), mat(0xc0c8d4));
+    handle.position.set(0, 0.35 + i * 0.38, 0.32); g.add(handle);
+  }
+  scene.add(g);
+}
+
+function makeBookshelf(x, z, rotY = 0) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rotY;
+  const shell = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.8, 0.4), mat(0x6b5344));
+  shell.position.y = 0.9; shell.castShadow = true; g.add(shell);
+  const colors = [0x4ade80, 0x60a5fa, 0xfbbf24, 0xf472b6, 0xa78bfa, 0x22d3ee];
+  for (let row = 0; row < 4; row++) {
+    for (let b = 0; b < 5; b++) {
+      const book = new THREE.Mesh(
+        new THREE.BoxGeometry(0.18, 0.28 + (b % 3) * 0.04, 0.28),
+        mat(colors[(row * 5 + b) % colors.length])
+      );
+      book.position.set(-0.5 + b * 0.25, 0.28 + row * 0.42, 0.02);
+      g.add(book);
+    }
+  }
+  scene.add(g);
+}
+
+function makeLounge(x, z) {
+  // Coffee table + two lounge chairs (Leadership / open area)
+  const table = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.75, 0.08, 16), mat(0x8b6b4a));
+  table.position.set(x, 0.42, z); table.castShadow = true; scene.add(table);
+  const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 0.4, 8), mat(0x3b3f4a));
+  leg.position.set(x, 0.2, z); scene.add(leg);
+  [[-1.3, 0.9], [1.3, 0.9]].forEach(([dx, dz], i) => {
+    const seat = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.35, 0.75), mat(i ? 0x7eb6ff : 0x5b8fd4));
+    seat.position.set(x + dx, 0.35, z + dz); seat.castShadow = true; scene.add(seat);
+    const back = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.7, 0.12), mat(i ? 0x7eb6ff : 0x5b8fd4));
+    back.position.set(x + dx, 0.7, z + dz + 0.35); scene.add(back);
+  });
+}
+
+function makeWaterCooler(x, z) {
+  const base = new THREE.Mesh(new THREE.BoxGeometry(0.55, 1.1, 0.5), mat(0xe8eef5));
+  base.position.set(x, 0.55, z); base.castShadow = true; scene.add(base);
+  const jug = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.45, 12), new THREE.MeshStandardMaterial({
+    color: 0x7ec8e3, transparent: true, opacity: 0.55, roughness: 0.2, metalness: 0.1
+  }));
+  jug.position.set(x, 1.35, z); scene.add(jug);
+  const spout = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.08, 0.18), mat(0x94a3b8));
+  spout.position.set(x, 0.95, z + 0.28); scene.add(spout);
+}
+
+function buildAccessories() {
+  // Plants in corners and near doors / partitions
+  makePlant(-HALF_W + 1.4, -HALF_D + 1.4, 1.1);
+  makePlant(HALF_W - 1.4, -HALF_D + 1.4, 1.0);
+  makePlant(-HALF_W + 1.4, HALF_D - 1.6, 1.15);
+  makePlant(HALF_W - 1.4, HALF_D - 1.6, 0.95);
+  makePlant(-2.2, HALF_D - 1.5, 0.85); // near entrance
+  makePlant(2.2, HALF_D - 1.5, 0.85);
+  makePlant(-6.5, 0, 0.75); // along central partition
+  makePlant(6.5, 0, 0.75);
+  makePlant(-13, -1.5, 0.7);
+  makePlant(13, 1.5, 0.7);
+  makePlant(0, -HALF_D + 1.5, 0.9);
+
+  // Wall art on north perimeter (facing south into office)
+  makeWallArt(-13, 2.1, -HALF_D + 0.2, 2.2, 1.4, 0x7eb6ff, "s"); // Leadership tint
+  makeWallArt(0, 2.1, -HALF_D + 0.2, 2.4, 1.3, 0x8fd0b0, "s");   // Research
+  makeWallArt(13, 2.1, -HALF_D + 0.2, 2.2, 1.4, 0x22d3ee, "s");  // Engineering
+  // South wall art (facing north) — avoid doorway
+  makeWallArt(-13, 2.0, HALF_D - 0.2, 2.0, 1.2, 0xe07a5f, "n"); // Content
+  makeWallArt(13, 2.0, HALF_D - 0.2, 2.0, 1.2, 0xf0b429, "n");  // Project Teams
+  // West / east wall frames (thin panels along x)
+  addBox(0.2, 1.55, 2.15, 0x5c4a32, -HALF_W + 0.12, 2.05, -7, { cast: false });
+  addBox(0.08, 1.4, 2.0, 0x7eb6ff, -HALF_W + 0.2, 2.05, -7, { cast: false, emissive: 0x7eb6ff, emissiveIntensity: 0.14 });
+  addBox(0.2, 1.55, 2.15, 0x5c4a32, -HALF_W + 0.12, 2.0, 7, { cast: false });
+  addBox(0.08, 1.4, 2.0, 0xc4b5fd, -HALF_W + 0.2, 2.0, 7, { cast: false, emissive: 0xc4b5fd, emissiveIntensity: 0.12 });
+  addBox(0.2, 1.55, 2.15, 0x5c4a32, HALF_W - 0.12, 2.0, -7, { cast: false });
+  addBox(0.08, 1.4, 2.0, 0x22d3ee, HALF_W - 0.2, 2.0, -7, { cast: false, emissive: 0x22d3ee, emissiveIntensity: 0.14 });
+  addBox(0.2, 1.55, 2.15, 0x5c4a32, HALF_W - 0.12, 2.0, 7, { cast: false });
+  addBox(0.08, 1.4, 2.0, 0xf0b429, HALF_W - 0.2, 2.0, 7, { cast: false, emissive: 0xf0b429, emissiveIntensity: 0.12 });
+
+  // Filing cabinets
+  makeCabinet(-18, -3, Math.PI / 2);
+  makeCabinet(-18, -4.3, Math.PI / 2);
+  makeCabinet(18, -4, -Math.PI / 2);
+  makeCabinet(18, 4, -Math.PI / 2);
+  makeCabinet(-18, 5, Math.PI / 2);
+
+  // Bookshelves
+  makeBookshelf(-10, -HALF_D + 1.0, 0);
+  makeBookshelf(10, -HALF_D + 1.0, 0);
+  makeBookshelf(-8, HALF_D - 1.0, Math.PI);
+
+  // Lounge in Leadership open corner
+  makeLounge(-17, -10);
+
+  // Water cooler near entrance corridor
+  makeWaterCooler(4.5, HALF_D - 2.5);
+
+  // Small plant stands / side tables
+  addBox(0.55, 0.55, 0.55, 0x6b5344, -4, 0.28, -12, {});
+  makePlant(-4, -12, 0.65);
+  addBox(0.55, 0.55, 0.55, 0x6b5344, 4, 0.28, 12, {});
+  makePlant(4, 12, 0.65);
+}
+
+buildFloor();
+buildPerimeterWalls();
+buildLowPartitions();
+buildLights();
+buildAccessories();
 
 
 async function loadVoxels() {
@@ -232,8 +498,16 @@ function makeDesk(id, name, role, zone, x, z) {
 async function boot() {
   await loadVoxels();
 for (const zone of ZONES) {
-  const rug = new THREE.Mesh(new THREE.PlaneGeometry(12, 10), new THREE.MeshStandardMaterial({ color: zone.color, transparent: true, opacity: 0.12 }));
-  rug.rotation.x = -Math.PI / 2; rug.position.set(zone.x, 0.02, zone.z); scene.add(rug);
+  // Distinct zone carpet on warmer wood floor
+  const rug = new THREE.Mesh(new THREE.PlaneGeometry(14, 11.5), new THREE.MeshStandardMaterial({
+    color: zone.color, transparent: true, opacity: 0.28, roughness: 0.95
+  }));
+  rug.rotation.x = -Math.PI / 2; rug.position.set(zone.x, 0.025, zone.z); rug.receiveShadow = true; scene.add(rug);
+  // Carpet border strip
+  const border = new THREE.Mesh(new THREE.PlaneGeometry(14.3, 11.8), new THREE.MeshStandardMaterial({
+    color: zone.color, transparent: true, opacity: 0.12, roughness: 0.9
+  }));
+  border.rotation.x = -Math.PI / 2; border.position.set(zone.x, 0.022, zone.z); scene.add(border);
   const zl = document.createElement("div"); zl.className = "zone"; zl.textContent = zone.name;
   const zo = new CSS2DObject(zl); zo.position.set(zone.x, 0.1, zone.z + 4.7); scene.add(zo);
   const n = zone.bots.length, cols = n > 2 ? 2 : n;
