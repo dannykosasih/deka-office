@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-05T21:25:12+07:00",
+  "updated": "2026-10-05T21:26:02+07:00",
   "bots": {
     "danny": {
       "state": "idle",
@@ -66,8 +66,8 @@
       "task": "Draf deck workshop menunggu review"
     },
     "engineer": {
-      "state": "working",
-      "task": "Shipping voxel characters"
+      "state": "idle",
+      "task": "Voxel characters live"
     },
     "design": {
       "state": "idle",
