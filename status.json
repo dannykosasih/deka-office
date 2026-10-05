@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-05T20:33:16+07:00",
+  "updated": "2026-10-05T20:56:53+07:00",
   "bots": {
     "danny": {
       "state": "idle",
@@ -15,7 +15,7 @@
     },
     "research": {
       "state": "waiting",
-      "task": "agent-office brief done"
+      "task": "awaiting research portrait"
     },
     "data": {
       "state": "waiting",
