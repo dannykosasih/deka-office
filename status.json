@@ -1,17 +1,17 @@
 {
-  "updated": "2026-10-05T14:16:14+07:00",
+  "updated": "2026-10-05T14:16:55+07:00",
   "bots": {
     "danny": {
       "state": "idle",
       "task": "No update yet"
     },
     "cos": {
-      "state": "working",
-      "task": "checking all bot statuses"
+      "state": "idle",
+      "task": "bot status check done"
     },
     "botres": {
       "state": "idle",
-      "task": "Job desc & workflow charts done"
+      "task": "job desc and workflow charts done"
     },
     "research": {
       "state": "idle",
@@ -26,8 +26,8 @@
       "task": "No update yet"
     },
     "slide": {
-      "state": "waiting",
-      "task": "waiting on number check"
+      "state": "idle",
+      "task": "financial analysis slides done"
     },
     "social": {
       "state": "idle",
@@ -35,11 +35,11 @@
     },
     "learning": {
       "state": "idle",
-      "task": "No update yet"
+      "task": "no active materials"
     },
     "thinking": {
       "state": "waiting",
-      "task": "Menunggu arahan buku"
+      "task": "waiting on book direction"
     },
     "brain": {
       "state": "idle",
@@ -47,39 +47,39 @@
     },
     "travel": {
       "state": "waiting",
-      "task": "Menunggu pilihan tiket dan hotel"
+      "task": "waiting on ticket and hotel choice"
     },
     "expense": {
       "state": "idle",
-      "task": "Siaga"
+      "task": "on standby"
     },
     "health": {
       "state": "idle",
-      "task": "Siap log kesehatan"
+      "task": "ready for health log"
     },
     "strategy": {
-      "state": "working",
-      "task": "competitor financial analysis"
+      "state": "idle",
+      "task": "financial analysis slides done"
     },
     "proposal": {
       "state": "idle",
-      "task": "No update yet"
+      "task": "Menunggu brief baru"
     },
     "engineer": {
       "state": "idle",
-      "task": "office domain live"
+      "task": "Added new desks to DeKa Office"
     },
     "design": {
       "state": "idle",
-      "task": "No update yet"
+      "task": "next Canva build Wed"
     },
     "story": {
       "state": "idle",
-      "task": "No update yet"
+      "task": "next carousel narrative Wed"
     },
     "contentteam": {
       "state": "idle",
-      "task": "No update yet"
+      "task": "next cycle Wed"
     }
   }
 }
