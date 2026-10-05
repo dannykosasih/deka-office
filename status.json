@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-05T14:15:43+07:00",
+  "updated": "2026-10-05T14:16:14+07:00",
   "bots": {
     "danny": {
       "state": "idle",
@@ -11,7 +11,7 @@
     },
     "botres": {
       "state": "idle",
-      "task": "No update yet"
+      "task": "Job desc & workflow charts done"
     },
     "research": {
       "state": "idle",
@@ -19,47 +19,47 @@
     },
     "data": {
       "state": "idle",
-      "task": "chart rasio selesai"
+      "task": "ratio charts done"
     },
     "aidigest": {
       "state": "idle",
       "task": "No update yet"
     },
     "slide": {
-      "state": "idle",
-      "task": "No update yet"
+      "state": "waiting",
+      "task": "waiting on number check"
     },
     "social": {
       "state": "idle",
-      "task": "No update yet"
+      "task": "next content cycle Wed"
     },
     "learning": {
       "state": "idle",
       "task": "No update yet"
     },
     "thinking": {
-      "state": "idle",
-      "task": "No update yet"
+      "state": "waiting",
+      "task": "Menunggu arahan buku"
     },
     "brain": {
       "state": "idle",
-      "task": "No update yet"
+      "task": "idle"
     },
     "travel": {
-      "state": "idle",
-      "task": "No update yet"
+      "state": "waiting",
+      "task": "Menunggu pilihan tiket dan hotel"
     },
     "expense": {
       "state": "idle",
-      "task": "No update yet"
+      "task": "Siaga"
     },
     "health": {
       "state": "idle",
-      "task": "No update yet"
+      "task": "Siap log kesehatan"
     },
     "strategy": {
-      "state": "idle",
-      "task": "No update yet"
+      "state": "working",
+      "task": "competitor financial analysis"
     },
     "proposal": {
       "state": "idle",
@@ -67,7 +67,19 @@
     },
     "engineer": {
       "state": "idle",
-      "task": "DeKa Office v1 is live"
+      "task": "office domain live"
+    },
+    "design": {
+      "state": "idle",
+      "task": "No update yet"
+    },
+    "story": {
+      "state": "idle",
+      "task": "No update yet"
+    },
+    "contentteam": {
+      "state": "idle",
+      "task": "No update yet"
     }
   }
 }

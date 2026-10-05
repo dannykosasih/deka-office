@@ -54,7 +54,9 @@ const ZONES = [
     ["slide", "Slide", "Designs and produces slide decks."],
     ["social", "Social", "Scripts and posts content for Instagram, LinkedIn, and YouTube."],
     ["learning", "Learning Material Team", "Learning materials."],
-    ["thinking", "Thinking Intelligence", "Danny's book on thinking intelligence in the AI era."] ] },
+    ["thinking", "Thinking Intelligence", "Danny's book on thinking intelligence in the AI era."],
+    ["design", "Design", "Icons, logos, pictures, and illustrations for Danny and the bot team."],
+    ["story", "Storytelling", "Writes the stories behind Danny's Instagram, LinkedIn, and YouTube content."] ] },
   { name: "Personal",        color: 0xc4b5fd, x: 0, z: 7, bots: [
     ["brain", "2nd Brain", "Notes, priorities, decisions, and reminders."],
     ["travel", "Travel", "Plans and arranges Danny's travel."],
@@ -62,7 +64,8 @@ const ZONES = [
     ["health", "Health", "Tracks Danny's health."] ] },
   { name: "Project Teams",   color: 0xf0b429, x: 13, z: 7, bots: [
     ["strategy", "Strategy Team", "Strategy work."],
-    ["proposal", "Proposal Team", "Client proposals."] ] }
+    ["proposal", "Proposal Team", "Client proposals."],
+    ["contentteam", "Content Creation Team", "Content creation."] ] }
 ];
 const STATE_COLOR = { working: 0x4ade80, waiting: 0xfbbf24, idle: 0x64748b };
 
@@ -140,7 +143,7 @@ for (const zone of ZONES) {
   const n = zone.bots.length, cols = n > 2 ? 2 : n;
   zone.bots.forEach(([id, name, role], i) => {
     const c = i % cols, r = Math.floor(i / cols), rows = Math.ceil(n / cols);
-    makeDesk(id, name, role, zone, zone.x + (c - (cols - 1) / 2) * 5, zone.z + (r - (rows - 1) / 2) * 4.2 - 0.6);
+    makeDesk(id, name, role, zone, zone.x + (c - (cols - 1) / 2) * 5, zone.z + (r - (rows - 1) / 2) * (rows > 2 ? 3.3 : 4.2) - 0.6);
   });
 }
 
