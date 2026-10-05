@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-05T15:55:54+07:00",
+  "updated": "2026-10-05T18:09:45+07:00",
   "bots": {
     "danny": {
       "state": "idle",
@@ -46,8 +46,8 @@
       "task": "idle"
     },
     "travel": {
-      "state": "waiting",
-      "task": "waiting on ticket and hotel choice"
+      "state": "working",
+      "task": "Mencari tiket pesawat"
     },
     "expense": {
       "state": "idle",
