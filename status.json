@@ -1,0 +1,73 @@
+{
+  "updated": "2026-10-05T11:40:05+07:00",
+  "bots": {
+    "danny": {
+      "state": "idle",
+      "task": "No update yet"
+    },
+    "cos": {
+      "state": "working",
+      "task": "Coordinating the 3D office project"
+    },
+    "botres": {
+      "state": "idle",
+      "task": "No update yet"
+    },
+    "research": {
+      "state": "idle",
+      "task": ""
+    },
+    "data": {
+      "state": "idle",
+      "task": "Finished AI digest slide flow"
+    },
+    "aidigest": {
+      "state": "idle",
+      "task": "No update yet"
+    },
+    "slide": {
+      "state": "idle",
+      "task": "No update yet"
+    },
+    "social": {
+      "state": "idle",
+      "task": "No update yet"
+    },
+    "learning": {
+      "state": "idle",
+      "task": "No update yet"
+    },
+    "thinking": {
+      "state": "idle",
+      "task": "No update yet"
+    },
+    "brain": {
+      "state": "idle",
+      "task": "No update yet"
+    },
+    "travel": {
+      "state": "idle",
+      "task": "No update yet"
+    },
+    "expense": {
+      "state": "idle",
+      "task": "No update yet"
+    },
+    "health": {
+      "state": "idle",
+      "task": "No update yet"
+    },
+    "strategy": {
+      "state": "idle",
+      "task": "No update yet"
+    },
+    "proposal": {
+      "state": "idle",
+      "task": "No update yet"
+    },
+    "engineer": {
+      "state": "working",
+      "task": "Building 3D office v1"
+    }
+  }
+}

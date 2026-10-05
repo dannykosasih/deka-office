@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DeKa Office</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0d1220; color: #e8eef8; font-family: system-ui, sans-serif; }
+  #title { position: fixed; left: 20px; top: 16px; }
+  #title h1 { font-size: 20px; margin: 0; font-weight: 600; }
+  #title p { margin: 4px 0 0; font-size: 13px; opacity: 0.7; }
+  #legend { position: fixed; left: 20px; bottom: 16px; font-size: 13px; opacity: 0.85; display: flex; gap: 14px; }
+  #legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; background: var(--c); }
+  #panel { position: fixed; right: 16px; top: 16px; width: 280px; background: rgba(20,28,48,0.92); border: 1px solid #2a3756; border-radius: 12px; padding: 16px; display: none; }
+  #panel h2 { margin: 0 0 4px; font-size: 18px; }
+  #panel .team { font-size: 12px; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.06em; }
+  #panel .role { font-size: 14px; line-height: 1.45; margin: 10px 0; }
+  #panel .now { font-size: 14px; padding: 8px 10px; background: #18213a; border-radius: 8px; }
+  #panel .close { position: absolute; right: 12px; top: 8px; cursor: pointer; opacity: 0.6; }
+  .tag { font-size: 11px; padding: 3px 7px; border-radius: 8px; background: rgba(13,18,32,0.85); border: 1px solid #33415f; white-space: nowrap; pointer-events: none; text-align: center; }
+  .tag b { display: block; font-size: 12px; }
+  .tag i { font-style: normal; opacity: 0.75; }
+  .zone { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.55; pointer-events: none; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="title"><h1>DeKa Office</h1><p id="updated">Loading status...</p></div>
+<div id="legend"><span style="--c:#4ade80">Working</span><span style="--c:#fbbf24">Waiting on Danny</span><span style="--c:#64748b">Idle</span></div>
+<div id="panel"><span class="close" onclick="this.parentNode.style.display='none'">x</span>
+  <div class="team" id="p-team"></div><h2 id="p-name"></h2><div class="role" id="p-role"></div><div class="now" id="p-now"></div></div>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
+
+const ZONES = [
+  { name: "Leadership",      color: 0x7eb6ff, x: -13, z: -7, bots: [
+    ["danny", "Danny", "You. Every ask starts here."],
+    ["cos", "Chief of Staff", "Turns Danny's asks into work across the bots and keeps the team aligned."],
+    ["botres", "Bot Resources", "Job descriptions and policies for how the bots work together."] ] },
+  { name: "Research & Data", color: 0x8fd0b0, x: 0, z: -7, bots: [
+    ["research", "Research", "Finds and sources information on the web."],
+    ["data", "Data", "Collects, cleans, analyzes, and interprets data."],
+    ["aidigest", "AI Digest", "AI news digest."] ] },
+  { name: "Engineering",     color: 0x22d3ee, x: 13, z: -7, bots: [
+    ["engineer", "Engineer", "Code, automations, bot team tooling, and Sheets engineering."] ] },
+  { name: "Content",         color: 0xe07a5f, x: -13, z: 7, bots: [
+    ["slide", "Slide", "Designs and produces slide decks."],
+    ["social", "Social", "Scripts and posts content for Instagram, LinkedIn, and YouTube."],
+    ["learning", "Learning Material Team", "Learning materials."],
+    ["thinking", "Thinking Intelligence", "Danny's book on thinking intelligence in the AI era."] ] },
+  { name: "Personal",        color: 0xc4b5fd, x: 0, z: 7, bots: [
+    ["brain", "2nd Brain", "Notes, priorities, decisions, and reminders."],
+    ["travel", "Travel", "Plans and arranges Danny's travel."],
+    ["expense", "Expense", "Tracks daily expenses."],
+    ["health", "Health", "Tracks Danny's health."] ] },
+  { name: "Project Teams",   color: 0xf0b429, x: 13, z: 7, bots: [
+    ["strategy", "Strategy Team", "Strategy work."],
+    ["proposal", "Proposal Team", "Client proposals."] ] }
+];
+const STATE_COLOR = { working: 0x4ade80, waiting: 0xfbbf24, idle: 0x64748b };
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0d1220);
+scene.fog = new THREE.Fog(0x0d1220, 60, 110);
+const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 300);
+camera.position.set(0, 23, 27);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(devicePixelRatio);
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
+const labels = new CSS2DRenderer();
+labels.setSize(innerWidth, innerHeight);
+Object.assign(labels.domElement.style, { position: "absolute", top: "0", pointerEvents: "none" });
+document.body.appendChild(labels.domElement);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0, 0); controls.enableDamping = true; controls.maxPolarAngle = Math.PI / 2.2;
+
+scene.add(new THREE.HemisphereLight(0xcfe0ff, 0x1a2238, 0.9));
+const sun = new THREE.DirectionalLight(0xffffff, 1.4);
+sun.position.set(15, 30, 10); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -30, right: 30, top: 30, bottom: -30 });
+scene.add(sun);
+
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(56, 40), new THREE.MeshStandardMaterial({ color: 0x1b2438 }));
+floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+const grid = new THREE.GridHelper(56, 28, 0x26324d, 0x26324d); grid.position.y = 0.01; scene.add(grid);
+
+const mat = c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.7 });
+const desks = {}, clickable = [];
+
+function makeDesk(id, name, role, zone, x, z) {
+  const g = new THREE.Group(); g.position.set(x, 0, z);
+  const top = new THREE.Mesh(new THREE.BoxGeometry(3, 0.15, 1.6), mat(0x8b6b4a)); top.position.y = 1.1;
+  g.add(top);
+  for (const [lx, lz] of [[-1.35, -0.65], [1.35, -0.65], [-1.35, 0.65], [1.35, 0.65]]) {
+    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.1, 0.1), mat(0x3b3f4a)); leg.position.set(lx, 0.55, lz); g.add(leg);
+  }
+  const screen = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.85, 0.08), mat(0x111827)); screen.position.set(0, 1.7, -0.45); g.add(screen);
+  const glow = new THREE.Mesh(new THREE.PlaneGeometry(1.28, 0.72), new THREE.MeshBasicMaterial({ color: zone.color, transparent: true, opacity: 0.35 }));
+  glow.position.set(0, 1.7, -0.4); g.add(glow);
+  const chair = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.12, 0.9), mat(0x2b3550)); chair.position.set(0, 0.7, 1.3); g.add(chair);
+  const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.38, 0.7, 4, 12), mat(zone.color)); body.position.set(0, 1.35, 1.3); g.add(body);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.32, 20, 16), mat(0xf1d3b3)); head.position.set(0, 2.2, 1.3); g.add(head);
+  const light = new THREE.Mesh(new THREE.SphereGeometry(0.24, 16, 12), new THREE.MeshBasicMaterial({ color: STATE_COLOR.idle }));
+  light.position.set(0, 2.75, 1.3); g.add(light);
+  g.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.userData.id = id; clickable.push(o); } });
+  const el = document.createElement("div"); el.className = "tag"; el.innerHTML = `<b>${name}</b><i>...</i>`;
+  const tag = new CSS2DObject(el); tag.position.set(0, 3.25, 1.3); g.add(tag);
+  scene.add(g);
+  desks[id] = { name, role, zone: zone.name, light, body, el, state: "idle", task: "" };
+}
+
+for (const zone of ZONES) {
+  const rug = new THREE.Mesh(new THREE.PlaneGeometry(12, 10), new THREE.MeshStandardMaterial({ color: zone.color, transparent: true, opacity: 0.12 }));
+  rug.rotation.x = -Math.PI / 2; rug.position.set(zone.x, 0.02, zone.z); scene.add(rug);
+  const zl = document.createElement("div"); zl.className = "zone"; zl.textContent = zone.name;
+  const zo = new CSS2DObject(zl); zo.position.set(zone.x, 0.1, zone.z + 4.7); scene.add(zo);
+  const n = zone.bots.length, cols = n > 2 ? 2 : n;
+  zone.bots.forEach(([id, name, role], i) => {
+    const c = i % cols, r = Math.floor(i / cols), rows = Math.ceil(n / cols);
+    makeDesk(id, name, role, zone, zone.x + (c - (cols - 1) / 2) * 5, zone.z + (r - (rows - 1) / 2) * 4.2 - 0.6);
+  });
+}
+
+let selected = null;
+function showPanel(id) {
+  const d = desks[id]; if (!d) return; selected = id;
+  document.getElementById("p-team").textContent = d.zone;
+  document.getElementById("p-name").textContent = d.name;
+  document.getElementById("p-role").textContent = d.role;
+  const word = { working: "Working on", waiting: "Waiting on Danny:", idle: "Idle." }[d.state];
+  document.getElementById("p-now").textContent = d.state === "idle" ? `Idle. ${d.task}` : `${word} ${d.task}`;
+  document.getElementById("panel").style.display = "block";
+}
+const ray = new THREE.Raycaster(), ptr = new THREE.Vector2();
+renderer.domElement.addEventListener("click", e => {
+  ptr.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  ray.setFromCamera(ptr, camera);
+  const hit = ray.intersectObjects(clickable)[0]; if (hit) showPanel(hit.object.userData.id);
+});
+
+async function loadStatus() {
+  try {
+    const res = await fetch("status.json?t=" + Date.now()); const data = await res.json();
+    for (const [id, s] of Object.entries(data.bots || {})) {
+      const d = desks[id]; if (!d) continue;
+      d.state = STATE_COLOR[s.state] ? s.state : "idle"; d.task = s.task || "";
+      d.light.material.color.setHex(STATE_COLOR[d.state]);
+      d.el.querySelector("i").textContent = d.state === "idle" ? "idle" : d.task;
+    }
+    document.getElementById("updated").textContent = "Status updated " + new Date(data.updated).toLocaleString("en-GB", { timeZone: "Asia/Jakarta", dateStyle: "medium", timeStyle: "short" }) + " WIB";
+    if (selected) showPanel(selected);
+  } catch (e) { document.getElementById("updated").textContent = "Couldn't read status.json"; }
+}
+loadStatus(); setInterval(loadStatus, 5000);
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  for (const d of Object.values(desks)) {
+    if (d.state === "working") d.body.position.y = 1.35 + Math.sin(t * 6 + d.body.id) * 0.04;
+    d.light.scale.setScalar(d.state === "waiting" ? 1 + Math.sin(t * 4) * 0.25 : 1);
+  }
+  controls.update(); renderer.render(scene, camera); labels.render(scene, camera);
+});
+addEventListener("resize", () => {
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight); labels.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>
