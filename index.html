@@ -108,15 +108,28 @@ function makeDesk(id, name, role, zone, x, z) {
   const glow = new THREE.Mesh(new THREE.PlaneGeometry(1.28, 0.72), new THREE.MeshBasicMaterial({ color: zone.color, transparent: true, opacity: 0.35 }));
   glow.position.set(0, 1.7, -0.4); g.add(glow);
   const chair = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.12, 0.9), mat(0x2b3550)); chair.position.set(0, 0.7, 1.3); g.add(chair);
-  const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.38, 0.7, 4, 12), mat(zone.color)); body.position.set(0, 1.35, 1.3); g.add(body);
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.32, 20, 16), mat(0xf1d3b3)); head.position.set(0, 2.2, 1.3); g.add(head);
+  const bot = new THREE.Group(); bot.position.set(0, 0, 1.3); g.add(bot);
+  const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.38, 0.7, 4, 12), mat(zone.color)); body.position.set(0, 1.35, 0); bot.add(body);
+  const head = new THREE.Group(); head.position.set(0, 2.2, 0); bot.add(head);
+  head.add(new THREE.Mesh(new THREE.SphereGeometry(0.32, 20, 16), mat(0xf1d3b3)));
+  for (const ex of [-0.11, 0.11]) {
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 8), new THREE.MeshBasicMaterial({ color: 0x1f2937 }));
+    eye.position.set(ex, 0.05, -0.29); head.add(eye);
+  }
+  const mkArm = side => {
+    const p = new THREE.Group(); p.position.set(side * 0.47, 1.68, 0);
+    const a = new THREE.Mesh(new THREE.CapsuleGeometry(0.1, 0.5, 4, 8), mat(zone.color)); a.position.y = -0.33; p.add(a);
+    bot.add(p); return p;
+  };
+  const armL = mkArm(-1), armR = mkArm(1);
   const light = new THREE.Mesh(new THREE.SphereGeometry(0.24, 16, 12), new THREE.MeshBasicMaterial({ color: STATE_COLOR.idle }));
-  light.position.set(0, 2.75, 1.3); g.add(light);
+  light.position.set(0, 2.85, 0); bot.add(light);
   g.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.userData.id = id; clickable.push(o); } });
   const el = document.createElement("div"); el.className = "tag"; el.innerHTML = `<b>${name}</b><i>...</i>`;
-  const tag = new CSS2DObject(el); tag.position.set(0, 3.25, 1.3); g.add(tag);
+  const tag = new CSS2DObject(el); tag.position.set(0, 3.4, 1.3); g.add(tag);
   scene.add(g);
-  desks[id] = { name, role, zone: zone.name, light, body, el, state: "idle", task: "" };
+  desks[id] = { name, role, zone: zone.name, light, body, head, bot, armL, armR, glow, el, state: "idle", task: "",
+    w: { working: 0, waiting: 0, idle: 1 }, phase: Math.random() * 10, target: new THREE.Color(STATE_COLOR.idle) };
 }
 
 for (const zone of ZONES) {
@@ -154,7 +167,7 @@ async function loadStatus() {
     for (const [id, s] of Object.entries(data.bots || {})) {
       const d = desks[id]; if (!d) continue;
       d.state = STATE_COLOR[s.state] ? s.state : "idle"; d.task = s.task || "";
-      d.light.material.color.setHex(STATE_COLOR[d.state]);
+      d.target.setHex(STATE_COLOR[d.state]);
       d.el.querySelector("i").textContent = d.state === "idle" ? "idle" : d.task;
     }
     document.getElementById("updated").textContent = "Status updated " + new Date(data.updated).toLocaleString("en-GB", { timeZone: "Asia/Jakarta", dateStyle: "medium", timeStyle: "short" }) + " WIB";
@@ -165,10 +178,25 @@ loadStatus(); setInterval(loadStatus, 5000);
 
 const clock = new THREE.Clock();
 renderer.setAnimationLoop(() => {
-  const t = clock.getElapsedTime();
+  const dt = Math.min(clock.getDelta(), 0.1), t = clock.elapsedTime;
+  const k = 1 - Math.exp(-dt * 2.5);
   for (const d of Object.values(desks)) {
-    if (d.state === "working") d.body.position.y = 1.35 + Math.sin(t * 6 + d.body.id) * 0.04;
-    d.light.scale.setScalar(d.state === "waiting" ? 1 + Math.sin(t * 4) * 0.25 : 1);
+    for (const s of ["working", "waiting", "idle"]) d.w[s] += ((d.state === s ? 1 : 0) - d.w[s]) * k;
+    const { working: W, waiting: A, idle: I } = d.w, p = d.phase;
+    // Working: typing hands and a small bob. Waiting: turn round and wave. Idle: breathe and look around.
+    d.armL.rotation.x = W * (1.15 + Math.sin(t * 14 + p) * 0.15) + I * 0.1 * Math.sin(t * 1.2 + p);
+    d.armR.rotation.x = W * (1.15 + Math.sin(t * 14 + p + Math.PI) * 0.15);
+    d.armR.rotation.z = A * (2.5 + Math.sin(t * 7 + p) * 0.35);
+    d.armL.rotation.z = 0;
+    d.bot.rotation.y = A * Math.PI;
+    d.body.position.y = 1.35 + W * Math.abs(Math.sin(t * 7 + p)) * 0.04;
+    d.body.scale.set(1 + I * Math.sin(t * 1.8 + p) * 0.025, 1 + I * Math.sin(t * 1.8 + p) * 0.04, 1);
+    d.head.rotation.y = I * Math.sin(t * 0.45 + p) * 0.7 + A * Math.sin(t * 2 + p) * 0.15;
+    d.head.rotation.x = W * (0.18 + Math.sin(t * 3 + p) * 0.03) - A * 0.1;
+    d.head.position.y = 2.2 + I * Math.sin(t * 1.8 + p) * 0.02;
+    d.light.material.color.lerp(d.target, k);
+    d.light.scale.setScalar(1 + A * Math.sin(t * 4) * 0.3);
+    d.glow.material.opacity = 0.2 + W * (0.35 + Math.sin(t * 9 + p) * 0.05) + A * 0.1;
   }
   controls.update(); renderer.render(scene, camera); labels.render(scene, camera);
 });
