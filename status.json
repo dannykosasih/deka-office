@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-05T15:21:23+07:00",
+  "updated": "2026-10-05T15:25:01+07:00",
   "bots": {
     "danny": {
       "state": "idle",
@@ -27,7 +27,7 @@
     },
     "slide": {
       "state": "idle",
-      "task": "financial analysis slides done"
+      "task": "Draf deck workshop selesai"
     },
     "social": {
       "state": "idle",
@@ -63,7 +63,7 @@
     },
     "proposal": {
       "state": "idle",
-      "task": "waiting on new brief"
+      "task": "Draf deck workshop menunggu review"
     },
     "engineer": {
       "state": "idle",
