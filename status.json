@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-05T12:56:44+07:00",
+  "updated": "2026-10-05T12:58:17+07:00",
   "bots": {
     "danny": {
       "state": "idle",
@@ -18,8 +18,8 @@
       "task": ""
     },
     "data": {
-      "state": "working",
-      "task": "Financial ratio analysis"
+      "state": "idle",
+      "task": "chart rasio selesai"
     },
     "aidigest": {
       "state": "idle",
