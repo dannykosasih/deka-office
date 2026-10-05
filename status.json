@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-05T15:25:01+07:00",
+  "updated": "2026-10-05T15:26:01+07:00",
   "bots": {
     "danny": {
       "state": "idle",
@@ -15,7 +15,7 @@
     },
     "research": {
       "state": "waiting",
-      "task": "handoff workshop facts"
+      "task": "workshop names locked"
     },
     "data": {
       "state": "waiting",
