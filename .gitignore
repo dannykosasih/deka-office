@@ -1,5 +1,7 @@
 graph-sketch.html
-office-v1.png
+office-*.png
 *.zip
 *.log
 *.png
+!portraits/
+!portraits/*.png
