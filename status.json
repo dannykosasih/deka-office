@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-05T14:16:55+07:00",
+  "updated": "2026-10-05T14:17:23+07:00",
   "bots": {
     "danny": {
       "state": "idle",
@@ -63,7 +63,7 @@
     },
     "proposal": {
       "state": "idle",
-      "task": "Menunggu brief baru"
+      "task": "waiting on new brief"
     },
     "engineer": {
       "state": "idle",
