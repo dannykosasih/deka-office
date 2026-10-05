@@ -53,7 +53,8 @@ const PORTRAITS = {
   slide: "portraits/slide.png",
   social: "portraits/social.png"
 };
-const VOXEL_IDS = ["cos","research","data","slide","social","engineer","design"];
+const VOXEL_IDS = ["cos","research","data","slide","social","engineer","design","story","botres","brain"];
+const VOXEL_FILE = { story: "purple", botres: "teal", brain: "maroon" };
 const voxelCache = {};
 const ZONES = [
   { name: "Leadership",      color: 0x7eb6ff, x: -13, z: -7, bots: [
@@ -120,8 +121,10 @@ const desks = {}, clickable = [];
 async function loadVoxels() {
   await Promise.all(VOXEL_IDS.map(async id => {
     try {
-      const res = await fetch(`voxels/${id}.json?t=` + Date.now());
+      const file = VOXEL_FILE[id] || id;
+      const res = await fetch(`voxels/${file}.json?t=` + Date.now());
       voxelCache[id] = await res.json();
+      voxelCache[id]._art = file;
     } catch (e) { console.warn("voxel load failed", id, e); }
   }));
 }
@@ -131,7 +134,8 @@ function buildVoxelBot(id) {
   if (!data) return null;
   const g = new THREE.Group();
   // Billboard: official voxel art (always faces camera)
-  const tex = new THREE.TextureLoader().load(`portraits/voxels/${id}.png`);
+  const art = (data && data._art) || id;
+  const tex = new THREE.TextureLoader().load(`portraits/voxels/${art}.png`);
   tex.colorSpace = THREE.SRGBColorSpace;
   const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false });
   const spr = new THREE.Sprite(mat);
