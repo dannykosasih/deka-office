@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-05T21:04:05+07:00",
+  "updated": "2026-10-05T21:04:50+07:00",
   "bots": {
     "danny": {
       "state": "idle",
@@ -66,8 +66,8 @@
       "task": "Draf deck workshop menunggu review"
     },
     "engineer": {
-      "state": "working",
-      "task": "Adding more portraits"
+      "state": "idle",
+      "task": "Portraits live on desks"
     },
     "design": {
       "state": "idle",
