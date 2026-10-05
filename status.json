@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-05T15:52:03+07:00",
+  "updated": "2026-10-05T15:52:38+07:00",
   "bots": {
     "danny": {
       "state": "idle",
@@ -18,8 +18,8 @@
       "task": "uncertainty brief delivered"
     },
     "data": {
-      "state": "working",
-      "task": "revisi outline slide"
+      "state": "waiting",
+      "task": "menunggu data pasar"
     },
     "aidigest": {
       "state": "idle",
