@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-07T10:43:57+07:00",
+  "updated": "2026-10-07T10:44:12+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -18,8 +18,8 @@
       "task": "IFG Life sport centers"
     },
     "data": {
-      "state": "waiting",
-      "task": "menunggu daftar cabang"
+      "state": "working",
+      "task": "scrap IFG Life Maps"
     },
     "aidigest": {
       "state": "working",
