@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-07T10:18:54+07:00",
+  "updated": "2026-10-07T10:21:44+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -14,20 +14,20 @@
       "task": "updating role guides"
     },
     "research": {
-      "state": "waiting",
-      "task": "AI Digest cycle 3 handoff"
+      "state": "idle",
+      "task": "standby"
     },
     "data": {
       "state": "idle",
-      "task": "alur Digest 3 siap"
+      "task": "Digest 3 dicek"
     },
     "aidigest": {
       "state": "working",
       "task": "compiling AI news"
     },
     "slide": {
-      "state": "working",
-      "task": "Membangun carousel AI Digest cycle 3"
+      "state": "idle",
+      "task": "Carousel AI Digest cycle 3 selesai"
     },
     "social": {
       "state": "waiting",
