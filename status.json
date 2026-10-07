@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-07T09:25:51+07:00",
+  "updated": "2026-10-07T09:27:30+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -14,12 +14,12 @@
       "task": "updating role guides"
     },
     "research": {
-      "state": "waiting",
-      "task": "finance research handed off"
+      "state": "idle",
+      "task": "standby after finance handoff"
     },
     "data": {
-      "state": "working",
-      "task": "cek angka carousel"
+      "state": "waiting",
+      "task": "menunggu Canva #03"
     },
     "aidigest": {
       "state": "working",
