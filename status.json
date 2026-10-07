@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-07T10:46:11+07:00",
+  "updated": "2026-10-07T12:59:13+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -18,8 +18,8 @@
       "task": "IFG Life sport centers"
     },
     "data": {
-      "state": "working",
-      "task": "scrap Maps"
+      "state": "waiting",
+      "task": "menunggu data sport center"
     },
     "aidigest": {
       "state": "working",
