@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-07T10:36:23+07:00",
+  "updated": "2026-10-07T10:37:05+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -26,8 +26,8 @@
       "task": "compiling AI news"
     },
     "slide": {
-      "state": "idle",
-      "task": "AI Digest dibekukan sampai lanjut"
+      "state": "waiting",
+      "task": "Menunggu data Maps IFG Life"
     },
     "social": {
       "state": "idle",
