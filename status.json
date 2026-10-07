@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-07T13:22:21+07:00",
+  "updated": "2026-10-07T13:23:30+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -18,8 +18,8 @@
       "task": "Done"
     },
     "data": {
-      "state": "waiting",
-      "task": "menunggu data sport center"
+      "state": "idle",
+      "task": "selesai"
     },
     "aidigest": {
       "state": "working",
