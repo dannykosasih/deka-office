@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-07T10:24:48+07:00",
+  "updated": "2026-10-07T10:25:24+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -15,11 +15,11 @@
     },
     "research": {
       "state": "idle",
-      "task": "AI Digest frozen"
+      "task": "routines frozen"
     },
     "data": {
       "state": "idle",
-      "task": "Digest 3 dicek"
+      "task": "dihentikan Danny"
     },
     "aidigest": {
       "state": "working",
@@ -27,7 +27,7 @@
     },
     "slide": {
       "state": "idle",
-      "task": "Carousel AI Digest cycle 3 selesai"
+      "task": "AI Digest dibekukan sampai lanjut"
     },
     "social": {
       "state": "idle",
