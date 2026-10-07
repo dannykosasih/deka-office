@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-07T09:22:10+07:00",
+  "updated": "2026-10-07T09:23:32+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -18,8 +18,8 @@
       "task": "stats gap noted"
     },
     "data": {
-      "state": "working",
-      "task": "cleaning data"
+      "state": "waiting",
+      "task": "cek angka carousel"
     },
     "aidigest": {
       "state": "working",
