@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-07T10:18:29+07:00",
+  "updated": "2026-10-07T10:18:54+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -26,8 +26,8 @@
       "task": "compiling AI news"
     },
     "slide": {
-      "state": "waiting",
-      "task": "Menunggu alur slide AI Digest cycle 3"
+      "state": "working",
+      "task": "Membangun carousel AI Digest cycle 3"
     },
     "social": {
       "state": "waiting",
