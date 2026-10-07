@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-07T10:37:05+07:00",
+  "updated": "2026-10-07T10:43:57+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -15,7 +15,7 @@
     },
     "research": {
       "state": "working",
-      "task": "IFG Life Maps allocate"
+      "task": "IFG Life sport centers"
     },
     "data": {
       "state": "waiting",
