@@ -20,9 +20,30 @@
   .tag { font-size: 11px; padding: 3px 7px; border-radius: 8px; background: rgba(13,18,32,0.85); border: 1px solid #33415f; white-space: nowrap; pointer-events: none; text-align: center; }
   .tag b { display: block; font-size: 12px; }
   .tag i { font-style: normal; opacity: 0.75; }
+  .tag.compact { font-size: 9px; padding: 1px 5px; }
+  .tag.compact b { font-size: 10px; }
+  .tag.compact i { display: none; }
   .zone { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.55; pointer-events: none; }
   .portrait { width: 88px; height: 88px; border-radius: 18px; object-fit: cover; border: 3px solid rgba(255,255,255,0.85); box-shadow: 0 6px 18px rgba(0,0,0,0.45); pointer-events: none; background: #1b2438; }
   .portrait-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; }
+  #hud { position: fixed; right: 16px; bottom: 16px; display: flex; gap: 8px; align-items: center; font-size: 12px; }
+  #hud button { background: rgba(20,28,48,0.92); color: #e8eef8; border: 1px solid #2a3756; border-radius: 8px; padding: 7px 12px; cursor: pointer; font: inherit; }
+  #hud button:hover { border-color: #5b7bc0; }
+  #hud button.on { background: #2d4a86; border-color: #7eb6ff; }
+  #hint { position: fixed; left: 50%; bottom: 56px; transform: translateX(-50%); font-size: 13px; padding: 6px 12px; border-radius: 8px; background: rgba(13,18,32,0.85); border: 1px solid #33415f; display: none; pointer-events: none; }
+  #crosshair { position: fixed; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: rgba(255,255,255,0.8); display: none; pointer-events: none; }
+  #panel .assign { margin-top: 12px; display: flex; gap: 6px; }
+  #panel .assign input { flex: 1; min-width: 0; background: #0f1628; border: 1px solid #2a3756; color: inherit; border-radius: 8px; padding: 7px 9px; font: inherit; font-size: 13px; }
+  #panel .assign button, #panel .qitem button { background: #2d4a86; color: #fff; border: 0; border-radius: 8px; padding: 7px 10px; cursor: pointer; font: inherit; font-size: 12px; }
+  #panel .goto { margin-top: 12px; display: flex; gap: 6px; flex-wrap: wrap; }
+  #panel .goto select { flex: 1 1 100%; background: #0f1628; border: 1px solid #2a3756; color: inherit; border-radius: 8px; padding: 7px 9px; font: inherit; font-size: 13px; }
+  #panel .goto button { background: #2d4a86; color: #fff; border: 0; border-radius: 8px; padding: 7px 10px; cursor: pointer; font: inherit; font-size: 12px; }
+  #panel .goto button.on { background: #b45309; }
+  #panel .note { font-size: 11px; opacity: 0.55; margin-top: 6px; line-height: 1.4; }
+  #panel .qtitle { margin-top: 12px; font-size: 11px; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.06em; }
+  #panel .qitem { display: flex; gap: 6px; align-items: center; justify-content: space-between; font-size: 13px; padding: 6px 8px; margin-top: 6px; background: #18213a; border-radius: 8px; }
+  #panel .qitem span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  #panel .qitem button.x { background: #3a2a35; }
 </style>
 <script type="importmap">
 { "imports": {
@@ -34,56 +55,34 @@
 <body>
 <div id="title"><h1>DeKa Office</h1><p id="updated">Loading status...</p></div>
 <div id="legend"><span style="--c:#4ade80">Working</span><span style="--c:#fbbf24">Waiting on Danny</span><span style="--c:#64748b">Idle</span></div>
+<div id="crosshair"></div><div id="hint"></div>
+<div id="hud"><button id="btn-walk">Walk mode (F)</button><button id="btn-theme">Gen Z (T)</button><button id="btn-night">Night (N)</button></div>
 <div id="panel"><span class="close" onclick="this.parentNode.style.display='none'">x</span>
-  <div class="team" id="p-team"></div><h2 id="p-name"></h2><div class="role" id="p-role"></div><div class="now" id="p-now"></div></div>
+  <div class="team" id="p-team"></div><h2 id="p-name"></h2><div class="role" id="p-role"></div><div class="now" id="p-now"></div>
+  <div class="goto"><select id="p-place"></select><button id="p-go">Go there</button><button id="p-pick">Pick spot</button><button id="p-home">Back to desk</button></div>
+  <div class="assign"><input id="p-input" maxlength="80" placeholder="Assign a task (generic label)" /><button id="p-add">Add</button></div>
+  <div class="note">The page is public, so use generic labels with no client names. The queue is saved in this browser only.</div>
+  <div class="qtitle" id="p-qtitle" style="display:none">Task queue</div><div id="p-queue"></div></div>
 <script type="module">
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { PointerLockControls } from "three/addons/controls/PointerLockControls.js";
 import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
 
-const PORTRAITS = {
-  story: "portraits/story.png",
-  cos: "portraits/cos.png",
-  botres: "portraits/botres.png",
-  data: "portraits/data.png",
-  design: "portraits/design.png",
-  brain: "portraits/brain.png",
-  engineer: "portraits/engineer.png",
-  research: "portraits/research.png",
-  slide: "portraits/slide.png",
-  social: "portraits/social.png"
-};
-const VOXEL_IDS = ["cos","research","data","slide","social","engineer","design","story","botres","brain"];
-const VOXEL_FILE = { story: "purple", botres: "teal", brain: "maroon" };
+// Bots, zones, portraits and voxel art all come from roster.json (one place to add or move a bot).
+let roster;
+try { roster = await (await fetch("roster.json?t=" + Date.now())).json(); }
+catch (e) { document.getElementById("updated").textContent = "Couldn't read roster.json"; throw e; }
+const PORTRAITS = {}, VOXEL_FILE = {}, VOXEL_IDS = [];
+for (const b of roster.bots) {
+  if (b.portrait) PORTRAITS[b.id] = b.portrait;
+  if (b.voxel) { VOXEL_IDS.push(b.id); VOXEL_FILE[b.id] = b.voxel; }
+}
 const voxelCache = {};
-const ZONES = [
-  { name: "Leadership",      color: 0x7eb6ff, x: -13, z: -7, bots: [
-    ["danny", "Danny", "You. Every ask starts here."],
-    ["cos", "Chief of Staff", "Turns Danny's asks into work across the bots and keeps the team aligned."],
-    ["botres", "Bot Resources", "Job descriptions and policies for how the bots work together."] ] },
-  { name: "Research & Data", color: 0x8fd0b0, x: 0, z: -7, bots: [
-    ["research", "Research", "Finds and sources information on the web."],
-    ["data", "Data", "Collects, cleans, analyzes, and interprets data."],
-    ["aidigest", "AI Digest", "AI news digest."] ] },
-  { name: "Engineering",     color: 0x22d3ee, x: 13, z: -7, bots: [
-    ["engineer", "Engineer", "Code, automations, bot team tooling, and Sheets engineering."] ] },
-  { name: "Content",         color: 0xe07a5f, x: -13, z: 7, bots: [
-    ["slide", "Slide", "Designs and produces slide decks."],
-    ["social", "Social", "Scripts and posts content for Instagram, LinkedIn, and YouTube."],
-    ["learning", "Learning Material Team", "Learning materials."],
-    ["thinking", "Thinking Intelligence", "Danny's book on thinking intelligence in the AI era."],
-    ["design", "Design", "Icons, logos, pictures, and illustrations for Danny and the bot team."],
-    ["story", "Storytelling", "Writes the stories behind Danny's Instagram, LinkedIn, and YouTube content."] ] },
-  { name: "Personal",        color: 0xc4b5fd, x: 0, z: 7, bots: [
-    ["brain", "2nd Brain", "Notes, priorities, decisions, and reminders."],
-    ["travel", "Travel", "Plans and arranges Danny's travel."],
-    ["expense", "Expense", "Tracks daily expenses."],
-    ["health", "Health", "Tracks Danny's health."] ] },
-  { name: "Project Teams",   color: 0xf0b429, x: 13, z: 7, bots: [
-    ["strategy", "Strategy Team", "Strategy work."],
-    ["proposal", "Proposal Team", "Client proposals."],
-    ["contentteam", "Content Creation Team", "Content creation."] ] }
-];
+const ZONES = roster.zones.map(z => ({
+  name: z.name, color: Number(z.color), x: z.x, z: z.z,
+  bots: roster.bots.filter(b => b.zone === z.name).map(b => [b.id, b.name, b.role])
+}));
 const STATE_COLOR = { working: 0x4ade80, waiting: 0xfbbf24, idle: 0x64748b };
 
 const scene = new THREE.Scene();
@@ -104,7 +103,8 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.set(0, 1, 0); controls.enableDamping = true; controls.maxPolarAngle = Math.PI / 2.2;
 
 // --- Brighter office lighting ---
-scene.add(new THREE.HemisphereLight(0xe8f0ff, 0x2a3348, 1.35));
+const hemi = new THREE.HemisphereLight(0xe8f0ff, 0x2a3348, 1.35); scene.add(hemi);
+const ceilLights = []; // [light, dayIntensity, nightIntensity]
 const sun = new THREE.DirectionalLight(0xfff5e6, 1.85);
 sun.position.set(12, 28, 14); sun.castShadow = true;
 sun.shadow.mapSize.set(1024, 1024);
@@ -116,6 +116,8 @@ fill.position.set(-18, 20, -10); scene.add(fill);
 
 const mat = c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.7 });
 const desks = {}, clickable = [];
+const obstacles = []; // footprints bots must walk around: {x, z, w, d}
+function obstacle(x, z, w, d, rotY = 0) { if (Math.abs(Math.sin(rotY)) > 0.5) [w, d] = [d, w]; obstacles.push({ x, z, w, d }); }
 
 const FLOOR_W = 56, FLOOR_D = 40, WALL_H = 3.2, WALL_T = 0.28;
 const HALF_W = FLOOR_W / 2, HALF_D = FLOOR_D / 2;
@@ -190,11 +192,13 @@ function buildLowPartitions() {
   // Leave walkway gaps ~2.5 wide at x=±6.5 around zone boundaries
   function partitionX(x, z0, z1) {
     const len = z1 - z0, mid = (z0 + z1) / 2;
+    obstacle(x, mid, t, len);
     addBox(t, h, len, panelC, x, h / 2, mid, { cast: true });
     addBox(t + 0.04, 0.06, len, railC, x, h + 0.03, mid, { cast: false });
   }
   function partitionZ(z, x0, x1) {
     const len = x1 - x0, mid = (x0 + x1) / 2;
+    obstacle(mid, z, len, t);
     addBox(len, h, t, panelC, mid, h / 2, z, { cast: true });
     addBox(len, 0.06, t + 0.04, railC, mid, h + 0.03, z, { cast: false });
   }
@@ -222,7 +226,7 @@ function addCeilingLight(x, z, color = 0xfff2dd, intensity = 1.1) {
   const pl = new THREE.PointLight(color, intensity, 18, 2);
   pl.position.set(x, WALL_H - 0.35, z);
   pl.castShadow = false; // perf: only sun casts shadows
-  scene.add(pl);
+  scene.add(pl); ceilLights.push([pl, intensity, intensity * 2.2]);
 }
 
 function buildLights() {
@@ -235,10 +239,11 @@ function buildLights() {
     cast: false, emissive: 0x22d3ee, emissiveIntensity: 0.7, roughness: 0.4, metalness: 0.1
   });
   const eng = new THREE.PointLight(0xaef6ff, 1.4, 16, 2);
-  eng.position.set(13, WALL_H - 0.5, -7); scene.add(eng);
+  eng.position.set(13, WALL_H - 0.5, -7); scene.add(eng); ceilLights.push([eng, 1.4, 2.6]);
 }
 
 function makePlant(x, z, scale = 1) {
+  obstacle(x, z, 0.7 * scale, 0.7 * scale);
   const g = new THREE.Group(); g.position.set(x, 0, z); g.scale.setScalar(scale);
   const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.22, 0.42, 10), mat(0x8b5a3c));
   pot.position.y = 0.21; pot.castShadow = true; g.add(pot);
@@ -266,6 +271,7 @@ function makeWallArt(x, y, z, w, h, tint, facing = "s") {
 }
 
 function makeCabinet(x, z, rotY = 0) {
+  obstacle(x, z, 1.1, 0.55, rotY);
   const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rotY;
   const body = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.35, 0.55), mat(0x4a5568));
   body.position.y = 0.675; body.castShadow = true; body.receiveShadow = true; g.add(body);
@@ -279,6 +285,7 @@ function makeCabinet(x, z, rotY = 0) {
 }
 
 function makeBookshelf(x, z, rotY = 0) {
+  obstacle(x, z, 1.4, 0.4, rotY);
   const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rotY;
   const shell = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.8, 0.4), mat(0x6b5344));
   shell.position.y = 0.9; shell.castShadow = true; g.add(shell);
@@ -297,6 +304,7 @@ function makeBookshelf(x, z, rotY = 0) {
 }
 
 function makeLounge(x, z) {
+  obstacle(x, z + 0.5, 4.2, 2.2);
   // Coffee table + two lounge chairs (Leadership / open area)
   const table = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.75, 0.08, 16), mat(0x8b6b4a));
   table.position.set(x, 0.42, z); table.castShadow = true; scene.add(table);
@@ -311,6 +319,7 @@ function makeLounge(x, z) {
 }
 
 function makeWaterCooler(x, z) {
+  obstacle(x, z, 0.55, 0.5);
   const base = new THREE.Mesh(new THREE.BoxGeometry(0.55, 1.1, 0.5), mat(0xe8eef5));
   base.position.set(x, 0.55, z); base.castShadow = true; scene.add(base);
   const jug = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.45, 12), new THREE.MeshStandardMaterial({
@@ -377,11 +386,222 @@ function buildAccessories() {
   makePlant(4, 12, 0.65);
 }
 
+const blinkers = []; // emissive LEDs that blink
+function makeWhiteboard(x, z, w = 2.6, h = 1.5) {
+  addBox(w + 0.14, h + 0.14, 0.06, 0x9aa4b4, x, 1.9, z, { cast: false });
+  addBox(w, h, 0.04, 0xf8fafc, x, 1.9, z + 0.04, { cast: false, roughness: 0.3 });
+  [[0x4ade80, -0.7, 0.35], [0x60a5fa, 0.1, 0.1], [0xf472b6, 0.6, -0.25]].forEach(([c, dx, dy]) =>
+    addBox(0.9, 0.05, 0.02, c, x + dx, 1.9 + dy, z + 0.07, { cast: false }));
+}
+function makeServerRack(x, z, rotY = 0) {
+  obstacle(x, z, 0.9, 0.8, rotY);
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rotY;
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.9, 2.2, 0.8), mat(0x1f2937));
+  body.position.y = 1.1; body.castShadow = true; g.add(body);
+  for (let i = 0; i < 7; i++) {
+    const unit = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.2, 0.04), mat(0x2d3748)); unit.position.set(0, 0.35 + i * 0.28, 0.41); g.add(unit);
+    const led = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 0.03), new THREE.MeshBasicMaterial({ color: 0x22d3ee }));
+    led.position.set(0.3, 0.35 + i * 0.28, 0.44); g.add(led); blinkers.push({ m: led, p: Math.random() * 10, on: i % 2 ? 0x4ade80 : 0x22d3ee });
+  }
+  scene.add(g);
+}
+function makeRug(x, z, w, d, color) {
+  const r = new THREE.Mesh(new THREE.PlaneGeometry(w, d), new THREE.MeshStandardMaterial({ color, roughness: 1 }));
+  r.rotation.x = -Math.PI / 2; r.position.set(x, 0.035, z); r.receiveShadow = true; scene.add(r);
+}
+function makePendant(x, z, color = 0xffd9a0) {
+  addBox(0.03, 1.1, 0.03, 0x2b3550, x, WALL_H - 0.55, z, { cast: false });
+  const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 12), new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.9, roughness: 0.4 }));
+  lamp.position.set(x, WALL_H - 1.2, z); scene.add(lamp);
+  const pl = new THREE.PointLight(color, 0.7, 9, 2); pl.position.set(x, WALL_H - 1.3, z); scene.add(pl); ceilLights.push([pl, 0.7, 1.8]);
+}
+function buildDecorV2() {
+  // Entrance sign on the north wall
+  addBox(7.5, 1.1, 0.12, 0x111827, 0, 2.55, -HALF_D + 0.22, { cast: false, emissive: 0x22d3ee, emissiveIntensity: 0.12 });
+  const sign = document.createElement("div"); sign.className = "zone"; sign.style.cssText = "font-size:20px;opacity:0.95;letter-spacing:0.18em;color:#bff3ff";
+  sign.textContent = "DEKA OFFICE"; const so = new CSS2DObject(sign); so.position.set(0, 2.55, -HALF_D + 0.35); scene.add(so);
+  // Research: whiteboards; Engineering: server racks; Content: moodboard wall
+  makeWhiteboard(-4, -HALF_D + 0.2); makeWhiteboard(4.2, -HALF_D + 0.2, 2.2, 1.3);
+  makeServerRack(16.8, -9.5, -Math.PI / 2); makeServerRack(16.8, -8.2, -Math.PI / 2); makeServerRack(16.8, -6.9, -Math.PI / 2);
+  [[-16, 0xe07a5f], [-14.2, 0xf0b429], [-12.4, 0xc4b5fd], [-10.6, 0x7eb6ff]].forEach(([x, c], i) =>
+    makeWallArt(x, 2.0 + (i % 2) * 0.3, HALF_D - 0.2, 1.3, 1.0, c, "n"));
+  // Lounge: rug + pendants + extra plants
+  makeRug(-17, -9.2, 6, 4.2, 0x3b5b8f); makePendant(-17, -10, 0xffd9a0);
+  makePendant(0, 0, 0xcfe6ff); makePendant(0, 3, 0xffd9a0);
+  makePlant(-19, -12.5, 1.2); makePlant(19, 12.5, 1.1);
+}
+
+// ===== Gen Z theme: neon, sofas, game station, glass meeting room, boba bar =====
+const genz = new THREE.Group(); scene.add(genz);
+const neonMats = [], genzLabels = [], holos = [];
+const GZ = { pink: 0xff4fd8, cyan: 0x22e5ff, lime: 0xb6ff3b, violet: 0x8b5cf6, orange: 0xff8a3d, yellow: 0xffe14d, blue: 0x3b82f6, teal: 0x14d8b8 };
+const GZ_LIST = Object.values(GZ);
+function gbox(w, h, d, color, x, y, z, opts = {}) { const m = addBox(w, h, d, color, x, y, z, opts); scene.remove(m); genz.add(m); return m; }
+function neon(w, h, d, color, x, y, z, pulse = true) {
+  const m = gbox(w, h, d, color, x, y, z, { cast: false, emissive: color, emissiveIntensity: 1, roughness: 0.3 });
+  if (pulse) neonMats.push({ mat: m.material, p: Math.random() * 6 });
+  return m;
+}
+function gcyl(rt, rb, h, color, x, y, z, opts = {}) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, 20), new THREE.MeshStandardMaterial({ color, roughness: opts.roughness ?? 0.5, metalness: opts.metalness ?? 0.1, emissive: opts.emissive ?? 0x000000, emissiveIntensity: opts.emissive ? 0.8 : 0 }));
+  m.position.set(x, y, z); m.castShadow = true; genz.add(m); return m;
+}
+function glabel(text, x, y, z, color = "#ffffff", size = 15) {
+  const el = document.createElement("div"); el.className = "zone";
+  el.style.cssText = `font-size:${size}px;opacity:0.95;letter-spacing:0.16em;color:${color};text-shadow:0 0 10px ${color}`;
+  el.textContent = text; const o = new CSS2DObject(el); o.position.set(x, y, z); scene.add(o); genzLabels.push(o); return o;
+}
+function labelTexture(text, c1, c2) {
+  const c = document.createElement("canvas"); c.width = 512; c.height = 256; const g = c.getContext("2d");
+  const gr = g.createLinearGradient(0, 0, 512, 256); gr.addColorStop(0, c1); gr.addColorStop(1, c2);
+  g.fillStyle = gr; g.fillRect(0, 0, 512, 256);
+  g.fillStyle = "rgba(255,255,255,0.12)"; for (let i = 0; i < 256; i += 8) g.fillRect(0, i, 512, 2); // scanlines
+  g.fillStyle = "#fff"; g.font = "bold 64px system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+  g.fillText(text, 256, 128);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+function gscreen(w, h, x, y, z, rotY, text, c1, c2) {
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: labelTexture(text, c1, c2) }));
+  m.position.set(x, y, z); m.rotation.y = rotY; genz.add(m);
+  return m;
+}
+function makeSofa(x, z, len, rotY, color) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rotY;
+  const m = new THREE.MeshStandardMaterial({ color, roughness: 0.6 }), m2 = new THREE.MeshStandardMaterial({ color, roughness: 0.6, emissive: color, emissiveIntensity: 0.12 });
+  const parts = [[len, 0.45, 0.95, 0, 0.3, 0, m], [len - 0.5, 0.2, 0.8, 0, 0.62, 0.04, m2], [len, 0.75, 0.22, 0, 0.85, -0.37, m], [0.25, 0.65, 0.95, len / 2 - 0.12, 0.55, 0, m], [0.25, 0.65, 0.95, -len / 2 + 0.12, 0.55, 0, m]];
+  parts.forEach(([w, h, d, px, py, pz, mt]) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mt); b.position.set(px, py, pz); b.castShadow = true; b.receiveShadow = true; g.add(b); });
+  genz.add(g); obstacle(x, z, len, 0.95, rotY);
+}
+function makeBeanbag(x, z, color) {
+  const b = new THREE.Mesh(new THREE.SphereGeometry(0.55, 20, 14), new THREE.MeshStandardMaterial({ color, roughness: 0.8 }));
+  b.scale.set(1, 0.7, 1); b.position.set(x, 0.38, z); b.castShadow = true; genz.add(b); obstacle(x, z, 0.9, 0.9);
+}
+function makeArcade(x, z, rotY, color) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rotY;
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.9, 0.8), new THREE.MeshStandardMaterial({ color: 0x1b1f3a, roughness: 0.5 })); body.position.y = 0.95; body.castShadow = true; g.add(body);
+  const side = new THREE.Mesh(new THREE.BoxGeometry(0.94, 1.9, 0.12), new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.5 })); side.position.set(0, 0.95, 0.36); g.add(side);
+  const scr = new THREE.Mesh(new THREE.PlaneGeometry(0.66, 0.52), new THREE.MeshBasicMaterial({ map: labelTexture("GAME", "#1e1b4b", "#" + color.toString(16).padStart(6, "0")) })); scr.position.set(0, 1.35, 0.425); scr.rotation.x = -0.15; g.add(scr);
+  const mq = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.22, 0.2), new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 1 })); mq.position.set(0, 1.97, 0.35); g.add(mq);
+  neonMats.push({ mat: mq.material, p: Math.random() * 6 });
+  const stick = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.18, 8), mat(0xff3b6b)); stick.position.set(-0.15, 0.95, 0.5); g.add(stick);
+  genz.add(g); obstacle(x, z, 0.9, 0.8, rotY);
+}
+function makeStool(x, z, color) {
+  gcyl(0.27, 0.27, 0.08, color, x, 0.78, z); gcyl(0.04, 0.04, 0.74, 0xc9d0e0, x, 0.38, z, { metalness: 0.6 }); obstacle(x, z, 0.6, 0.6);
+}
+function makeMeetingChair(x, z, face, color) {
+  const bx = { e: -0.38, w: 0.38 }[face] || 0, bz = { s: -0.38, n: 0.38 }[face] || 0;
+  const seat = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.1, 0.75), new THREE.MeshStandardMaterial({ color, roughness: 0.5 })); seat.position.set(x, 0.5, z); seat.castShadow = true; genz.add(seat);
+  const back = new THREE.Mesh(new THREE.BoxGeometry(bx ? 0.1 : 0.75, 0.75, bz ? 0.1 : 0.75), new THREE.MeshStandardMaterial({ color, roughness: 0.5 })); back.position.set(x + bx, 0.9, z + bz); back.castShadow = true; genz.add(back);
+  gcyl(0.06, 0.06, 0.45, 0x2b3550, x, 0.25, z);
+}
+function gLight(color, intensity, x, y, z, dist = 12) { const l = new THREE.PointLight(color, intensity, dist, 2); l.position.set(x, y, z); genz.add(l); ceilLights.push([l, intensity, intensity * 2]); }
+
+function buildGenZ() {
+  // Glowing grid on the floor + neon outlines around each zone
+  const grid = new THREE.GridHelper(FLOOR_W, 28, GZ.cyan, GZ.violet); grid.position.y = 0.018;
+  (Array.isArray(grid.material) ? grid.material : [grid.material]).forEach(m => { m.transparent = true; m.opacity = 0.22; });
+  genz.add(grid);
+  ZONES.forEach(zn => {
+    const w = 14.3, d = 11.8, t = 0.09, y = 0.06;
+    neon(w, 0.03, t, zn.color, zn.x, y, zn.z - d / 2); neon(w, 0.03, t, zn.color, zn.x, y, zn.z + d / 2);
+    neon(t, 0.03, d, zn.color, zn.x - w / 2, y, zn.z); neon(t, 0.03, d, zn.color, zn.x + w / 2, y, zn.z);
+  });
+  // Neon strips along the walls (floor and ceiling), colour changes every few metres
+  let ci = 0;
+  const strip = (len, x, z, alongX, y) => { const c = GZ_LIST[ci++ % GZ_LIST.length]; neon(alongX ? len : 0.07, 0.07, alongX ? 0.07 : len, c, x, y, z); };
+  for (const y of [0.14, WALL_H - 0.12]) {
+    for (let x = -HALF_W + 4; x < HALF_W; x += 8) {
+      strip(7.8, x, -HALF_D + WALL_T + 0.1, true, y);
+      if (Math.abs(x) > 2.3) strip(7.8, x, HALF_D - WALL_T - 0.1, true, y);
+    }
+    for (let z = -HALF_D + 4; z < HALF_D; z += 8) { strip(7.8, -HALF_W + WALL_T + 0.1, z, false, y); strip(7.8, HALF_W - WALL_T - 0.1, z, false, y); }
+  }
+
+  // --- Glass meeting room (east): the whole team gathers here when agents work together
+  const MX = 24.3, MZ = -8;
+  gbox(6.4, 0.04, 14, 0x2a1f66, MX, 0.03, MZ, { cast: false, roughness: 0.9 });
+  const glass = { opacity: 0.2, roughness: 0.1, metalness: 0.3, cast: false };
+  gbox(6.6, 2.6, 0.1, 0x8fe9ff, MX, 1.3, -15, glass); gbox(6.6, 2.6, 0.1, 0x8fe9ff, MX, 1.3, -1, glass);
+  gbox(0.1, 2.6, 5, 0x8fe9ff, 21, 1.3, -12.5, glass); gbox(0.1, 2.6, 5, 0x8fe9ff, 21, 1.3, -3.5, glass);
+  neon(6.6, 0.06, 0.08, GZ.cyan, MX, 2.62, -15); neon(6.6, 0.06, 0.08, GZ.cyan, MX, 2.62, -1);
+  neon(0.08, 0.06, 5, GZ.pink, 21, 2.62, -12.5); neon(0.08, 0.06, 5, GZ.pink, 21, 2.62, -3.5);
+  obstacle(MX, -15, 6.6, 0.2); obstacle(MX, -1, 6.6, 0.2); obstacle(21, -12.5, 0.2, 5); obstacle(21, -3.5, 0.2, 5);
+  gbox(2.2, 0.12, 7, 0x161a3a, MX, 0.95, MZ, { roughness: 0.2, metalness: 0.5 });
+  gbox(0.2, 0.9, 5.5, 0x2b3550, MX, 0.45, MZ); neon(2.3, 0.04, 7.1, GZ.pink, MX, 0.85, MZ);
+  obstacle(MX, MZ, 2.2, 7);
+  gscreen(5, 2.2, 27.7, 1.9, MZ, -Math.PI / 2, "TEAM SYNC", "#6d28d9", "#06b6d4");
+  gbox(0.1, 2.4, 5.2, 0x0b0f1f, 27.76, 1.9, MZ, { cast: false });
+  const seats = (roster.meeting && roster.meeting.seats) || [];
+  seats.filter(s => s.sit).forEach((s, i) => makeMeetingChair(s.x, s.z, s.face, GZ_LIST[i % GZ_LIST.length]));
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(1.1, 0.04, 8, 48), new THREE.MeshBasicMaterial({ color: GZ.cyan }));
+  ring.position.set(MX, 2.2, MZ); genz.add(ring); holos.push(ring);
+  const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.45, 1), new THREE.MeshBasicMaterial({ color: GZ.pink, wireframe: true }));
+  core.position.set(MX, 2.2, MZ); genz.add(core); holos.push(core);
+  gLight(0x9d7bff, 1.5, MX, 2.6, MZ);
+  glabel("MEETING ROOM", 21, 2.9, MZ, "#7df3ff", 14);
+
+  // --- Game station (west, north): TV, console, sofa, beanbags, arcade cabinets
+  gscreen(4.4, 2.4, -27.7, 1.9, -11, Math.PI / 2, "GAME ON", "#be185d", "#4f46e5");
+  gbox(0.1, 2.6, 4.6, 0x0b0f1f, -27.76, 1.9, -11, { cast: false });
+  gbox(0.6, 0.5, 3, 0x1b1f3a, -27.2, 0.25, -11); neon(0.4, 0.06, 0.8, GZ.lime, -27.1, 0.55, -11);
+  makeSofa(-22.9, -11, 4.2, -Math.PI / 2, GZ.violet);
+  makeBeanbag(-25.1, -8.4, GZ.pink); makeBeanbag(-25.1, -13.6, GZ.orange);
+  gbox(5.6, 0.04, 7.6, 0x3b1f6a, -24.6, 0.03, -11, { cast: false });
+  [-26, -24.2, -22.4].forEach((ax, i) => makeArcade(ax, -19.3, 0, [GZ.cyan, GZ.pink, GZ.lime][i]));
+  gLight(0xff4fd8, 1.4, -24.5, 2.6, -13);
+  glabel("GAME STATION", -27, 3, -15, "#ff9be9", 14);
+
+  // --- Sofa lounge (west, south of game station)
+  gbox(5.6, 0.04, 6.4, 0x0f766e, -24.3, 0.03, 2.8, { cast: false });
+  makeSofa(-23.8, 4.9, 4.6, Math.PI, GZ.teal); makeSofa(-26.5, 1.2, 3.4, Math.PI / 2, GZ.orange);
+  gcyl(0.6, 0.6, 0.08, 0x1b1f3a, -23.6, 0.42, 1.9, { metalness: 0.4 }); gcyl(0.08, 0.1, 0.4, 0x2b3550, -23.6, 0.2, 1.9);
+  neon(1.3, 0.03, 0.04, GZ.yellow, -23.6, 0.47, 1.9); obstacle(-23.6, 1.9, 1.2, 1.2);
+  makeBeanbag(-21.9, 1.6, GZ.yellow);
+  gLight(0x14d8b8, 1.1, -24, 2.6, 2.5);
+  glabel("CHILL ZONE", -27, 2.9, 5.5, "#7dffe9", 14);
+
+  // --- Boba bar (east, south)
+  gbox(5, 1.1, 0.8, 0xff4fd8, 24.2, 0.55, 18.8); gbox(5.2, 0.08, 1, 0xf5f3ff, 24.2, 1.12, 18.8); neon(4.8, 0.06, 0.04, GZ.cyan, 24.2, 0.9, 18.35);
+  obstacle(24.2, 18.8, 5.2, 1);
+  [22.2, 24.2, 26.2].forEach((sx, i) => { makeStool(sx, 17.2, [GZ.lime, GZ.yellow, GZ.cyan][i]); gcyl(0.14, 0.11, 0.3, GZ_LIST[(i + 2) % 8], sx + 0.3, 1.31, 18.8); });
+  gbox(1, 2.1, 0.9, 0x1b1f3a, 27, 1.05, 14.6); neon(0.8, 1.6, 0.04, GZ.blue, 27, 1.05, 14.12); obstacle(27, 14.6, 1, 0.9);
+  gLight(0xff4fd8, 1.0, 24, 2.6, 17);
+  glabel("BOBA BAR", 24.2, 2.7, 19, "#ff9be9", 14);
+
+  // --- Pick up the original floor/wall materials so the theme can be switched
+  const floorMats = [], wallMats = []; let oldGrid = null;
+  scene.traverse(o => {
+    if (o.type === "GridHelper" && o.parent === scene) oldGrid = o;
+    if (o.isMesh && o.material && o.material.color) {
+      const hx = o.material.color.getHex();
+      if (hx === 0xc4a574) floorMats.push(o.material); else if (hx === 0xe8e4dc) wallMats.push(o.material);
+    }
+  });
+  window.__setTheme = on => {
+    genz.visible = on; genzLabels.forEach(l => { l.visible = on; });
+    floorMats.forEach(m => { m.color.setHex(on ? 0xe9ecf8 : 0xc4a574); m.roughness = on ? 0.35 : 0.85; m.metalness = on ? 0.2 : 0.02; });
+    wallMats.forEach(m => m.color.setHex(on ? 0xf3efff : 0xe8e4dc));
+    if (oldGrid) oldGrid.visible = !on;
+    document.getElementById("btn-theme").classList.toggle("on", on);
+  };
+}
+function genzTick(t) {
+  neonMats.forEach(n => { n.mat.emissiveIntensity = 0.85 + 0.35 * Math.sin(t * 1.6 + n.p); });
+  holos.forEach((h, i) => { h.rotation.y = t * (i ? -0.9 : 0.6); h.rotation.x = t * (i ? 0.7 : 0.25); });
+}
+
 buildFloor();
 buildPerimeterWalls();
 buildLowPartitions();
 buildLights();
 buildAccessories();
+buildDecorV2();
+buildGenZ();
+const btnTheme = document.getElementById("btn-theme");
+let genzOn = true; window.__setTheme(true);
+btnTheme.onclick = () => { genzOn = !genzOn; window.__setTheme(genzOn); };
+addEventListener("keydown", e => { if (!/^(INPUT|TEXTAREA)$/.test(e.target.tagName) && e.code === "KeyT") btnTheme.click(); });
 
 
 async function loadVoxels() {
@@ -401,11 +621,11 @@ function buildVoxelBot(id) {
   const g = new THREE.Group();
   // Billboard: official voxel art (always faces camera)
   const art = (data && data._art) || id;
-  const tex = new THREE.TextureLoader().load(`portraits/voxels/${art}.png`);
+  const tex = new THREE.TextureLoader().load(`portraits/voxels/${art}.png?v=2`);
   tex.colorSpace = THREE.SRGBColorSpace;
   const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false });
   const spr = new THREE.Sprite(mat);
-  spr.scale.set(1.7, 2.5, 1);
+  spr.scale.set(1.58, 2.5, 1);
   spr.position.set(0, 1.3, 0);
   spr.userData.id = id;
   g.add(spr);
@@ -489,8 +709,13 @@ function makeDesk(id, name, role, zone, x, z) {
     bot.visible = false;
     light.position.set(0, 3.15, 1.3); g.add(light);
   }
+  obstacle(x, z, 3.2, 1.8); obstacle(x, z + 1.3, 1.0, 1.0); // desk top and chair
+  const mover = new THREE.Group(); g.add(mover);
+  [bot, voxel, portraitObj, tag].forEach(o => { if (o && o.parent === g) mover.add(o); });
+  if (light.parent === g) mover.add(light);
+  const home = { x, z: z + (voxel ? 1.1 : 1.3) };
   scene.add(g);
-  desks[id] = { name, role, zone: zone.name, light, body, head, bot, armL, armR, glow, el, portraitObj, voxel, state: "idle", task: "",
+  desks[id] = { mover, tag, home, pos: { x: home.x, z: home.z }, path: [], walkW: 0, face: 1, heading: 0, place: null, gx: x, gz: z, name, role, zone: zone.name, light, body, head, bot, armL, armR, glow, el, portraitObj, voxel, state: "idle", task: "",
     w: { working: 0, waiting: 0, idle: 1 }, phase: Math.random() * 10, target: new THREE.Color(STATE_COLOR.idle) };
 }
 
@@ -518,23 +743,281 @@ for (const zone of ZONES) {
 }
 
 let selected = null;
+// --- Task queue (browser-local; the page is static so nothing is sent anywhere)
+const QKEY = "deka-office-tasks";
+let tasks = [];
+try { tasks = JSON.parse(localStorage.getItem(QKEY) || "[]"); } catch (e) { tasks = []; }
+const saveTasks = () => { try { localStorage.setItem(QKEY, JSON.stringify(tasks)); } catch (e) {} };
+const queued = id => tasks.filter(t => t.bot === id);
+function refreshTag(id) {
+  const d = desks[id]; if (!d) return;
+  const n = queued(id).length;
+  d.el.querySelector("i").textContent = (d.state === "idle" ? "idle" : d.task) + (n ? ` · ${n} queued` : "");
+}
+function renderQueue() {
+  const q = document.getElementById("p-queue"); q.textContent = "";
+  const list = selected ? queued(selected) : [];
+  document.getElementById("p-qtitle").style.display = list.length ? "block" : "none";
+  list.forEach(t => {
+    const row = document.createElement("div"); row.className = "qitem";
+    const sp = document.createElement("span"); sp.textContent = t.text;
+    const run = document.createElement("button"); run.textContent = "Copy cmd";
+    run.title = "Copy the set-status.sh command that marks this bot as working on it";
+    run.onclick = async () => {
+      const cmd = `./set-status.sh ${t.bot} working "${t.text.replace(/["\\$`]/g, "")}"`;
+      try { await navigator.clipboard.writeText(cmd); run.textContent = "Copied"; } catch (e) { prompt("Copy this command:", cmd); }
+    };
+    const x = document.createElement("button"); x.className = "x"; x.textContent = "Done";
+    x.onclick = () => { tasks = tasks.filter(o => o !== t); saveTasks(); renderQueue(); refreshTag(t.bot); };
+    row.append(sp, run, x); q.appendChild(row);
+  });
+}
+function addTask() {
+  const input = document.getElementById("p-input"), text = input.value.trim();
+  if (!selected || !text) return;
+  tasks.push({ bot: selected, text, ts: Date.now() }); saveTasks(); input.value = "";
+  renderQueue(); refreshTag(selected);
+}
+document.getElementById("p-add").onclick = addTask;
+document.getElementById("p-input").addEventListener("keydown", e => { if (e.key === "Enter") addTask(); });
+Object.keys(desks).forEach(refreshTag);
+
 function showPanel(id) {
-  const d = desks[id]; if (!d) return; selected = id;
+  const d = desks[id]; if (!d) return;
+  const changed = selected !== id; selected = id;
   document.getElementById("p-team").textContent = d.zone;
   document.getElementById("p-name").textContent = d.name;
   document.getElementById("p-role").textContent = d.role;
   const word = { working: "Working on", waiting: "Waiting on Danny:", idle: "Idle." }[d.state];
   document.getElementById("p-now").textContent = d.state === "idle" ? `Idle. ${d.task}` : `${word} ${d.task}`;
   document.getElementById("panel").style.display = "block";
+  if (changed) { renderQueue(); fillPlaces(); }
 }
 const ray = new THREE.Raycaster(), ptr = new THREE.Vector2();
 renderer.domElement.addEventListener("click", e => {
+  if (walk.on) return;
   ptr.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
   ray.setFromCamera(ptr, camera);
   const hit = ray.intersectObjects(clickable)[0]; if (hit) showPanel(hit.object.userData.id);
 });
 
+// --- Walk mode: WASD + mouse look, E talks to the bot you are looking at
+const walk = { on: false, keys: {}, saved: null };
+const plc = new PointerLockControls(camera, renderer.domElement);
+const hint = document.getElementById("hint"), cross = document.getElementById("crosshair");
+const btnWalk = document.getElementById("btn-walk");
+function setWalk(on) {
+  walk.on = on; btnWalk.classList.toggle("on", on);
+  controls.enabled = !on; cross.style.display = on ? "block" : "none";
+  if (on) {
+    walk.saved = { p: camera.position.clone(), t: controls.target.clone() };
+    camera.position.set(0, 1.7, HALF_D - 3); camera.lookAt(0, 1.6, 0);
+    hint.style.display = "block"; hint.textContent = "Click to look around. WASD move, Shift run, E talk to bot, Esc frees the mouse";
+  } else {
+    plc.unlock(); hint.style.display = "none";
+    if (walk.saved) { camera.position.copy(walk.saved.p); controls.target.copy(walk.saved.t); camera.lookAt(controls.target); }
+  }
+}
+btnWalk.onclick = () => setWalk(!walk.on);
+renderer.domElement.addEventListener("click", () => { if (walk.on && !plc.isLocked) plc.lock(); });
+plc.addEventListener("lock", () => { hint.style.display = "none"; });
+plc.addEventListener("unlock", () => { if (walk.on) { hint.style.display = "block"; hint.textContent = "Click to resume walking"; } });
+function lookedAtBot() {
+  ray.setFromCamera({ x: 0, y: 0 }, camera);
+  const hit = ray.intersectObjects(clickable)[0];
+  return hit && hit.distance < 7 ? hit.object.userData.id : null;
+}
+function walkStep(dt) {
+  if (!walk.on || !plc.isLocked) return;
+  const sp = (walk.keys.ShiftLeft || walk.keys.ShiftRight ? 9 : 4.5) * dt;
+  const f = (walk.keys.KeyW || walk.keys.ArrowUp ? 1 : 0) - (walk.keys.KeyS || walk.keys.ArrowDown ? 1 : 0);
+  const r = (walk.keys.KeyD || walk.keys.ArrowRight ? 1 : 0) - (walk.keys.KeyA || walk.keys.ArrowLeft ? 1 : 0);
+  if (f) plc.moveForward(f * sp);
+  if (r) plc.moveRight(r * sp);
+  const p = camera.position; p.y = 1.7;
+  p.x = Math.max(-HALF_W + 1, Math.min(HALF_W - 1, p.x)); p.z = Math.max(-HALF_D + 1, Math.min(HALF_D - 1, p.z));
+  for (const d of Object.values(desks)) { // keep out of desks (3 x 2 footprint plus margin)
+    const dx = p.x - d.gx, dz = p.z - (d.gz + 0.1), hx = 1.9, hz = 1.2;
+    if (Math.abs(dx) < hx && Math.abs(dz) < hz) {
+      if (hx - Math.abs(dx) < hz - Math.abs(dz)) p.x = d.gx + Math.sign(dx || 1) * hx; else p.z = d.gz + 0.1 + Math.sign(dz || 1) * hz;
+    }
+  }
+  const id = lookedAtBot();
+  if (id) { hint.style.display = "block"; hint.textContent = `E: talk to ${desks[id].name}`; }
+  else if (hint.textContent.startsWith("E:")) hint.style.display = "none";
+}
 
+// --- Day / night
+let night = false;
+const btnNight = document.getElementById("btn-night");
+function setNight(on) {
+  night = on; btnNight.classList.toggle("on", on);
+  const bg = on ? 0x05070f : 0x0d1220;
+  scene.background.setHex(bg); scene.fog.color.setHex(bg);
+  hemi.intensity = on ? 0.3 : 1.35; sun.intensity = on ? 0.18 : 1.85; fill.intensity = on ? 0.1 : 0.45;
+  sun.color.setHex(on ? 0x8aa4ff : 0xfff5e6);
+  ceilLights.forEach(([l, day, nite]) => { l.intensity = on ? nite : day; });
+}
+btnNight.onclick = () => setNight(!night);
+
+addEventListener("keydown", e => {
+  if (/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+  walk.keys[e.code] = true;
+  if (e.code === "KeyF") setWalk(!walk.on);
+  else if (e.code === "KeyN") setNight(!night);
+  else if (e.code === "KeyE" && walk.on) { const id = lookedAtBot(); if (id) { plc.unlock(); showPanel(id); } }
+});
+addEventListener("keyup", e => { walk.keys[e.code] = false; });
+
+// --- Send bots to places: grid pathfinding around desks, partitions and furniture
+const CELL = 0.5, GX = Math.round(FLOOR_W / CELL), GZ = Math.round(FLOOR_D / CELL), PAD = 0.3, SPEED = 3.2;
+const cellOf = (x, z) => [Math.floor((x + HALF_W) / CELL), Math.floor((z + HALF_D) / CELL)];
+const centerOf = (ix, iz) => [ix * CELL - HALF_W + CELL / 2, iz * CELL - HALF_D + CELL / 2];
+const inGrid = (ix, iz) => ix >= 0 && iz >= 0 && ix < GX && iz < GZ;
+let baseGrid = null;
+function buildGrid() {
+  const g = new Uint8Array(GX * GZ);
+  for (let iz = 0; iz < GZ; iz++) for (let ix = 0; ix < GX; ix++) {
+    const [cx, cz] = centerOf(ix, iz);
+    if (Math.abs(cx) > HALF_W - 1 || Math.abs(cz) > HALF_D - 1) { g[iz * GX + ix] = 1; continue; }
+    for (const o of obstacles) {
+      if (Math.abs(cx - o.x) <= o.w / 2 + PAD && Math.abs(cz - o.z) <= o.d / 2 + PAD) { g[iz * GX + ix] = 1; break; }
+    }
+  }
+  return g;
+}
+function nearestFree(grid, x, z, maxR = 12) {
+  const [sx, sz] = cellOf(x, z);
+  for (let r = 0; r <= maxR; r++) for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) {
+    if (Math.max(Math.abs(dx), Math.abs(dz)) !== r) continue;
+    const ix = sx + dx, iz = sz + dz;
+    if (inGrid(ix, iz) && !grid[iz * GX + ix]) return [ix, iz];
+  }
+  return null;
+}
+function lineFree(grid, a, b) {
+  const n = Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 0.2);
+  for (let i = 0; i <= n; i++) {
+    const [ix, iz] = cellOf(a[0] + (b[0] - a[0]) * i / n, a[1] + (b[1] - a[1]) * i / n);
+    if (!inGrid(ix, iz) || grid[iz * GX + ix]) return false;
+  }
+  return true;
+}
+function findPath(from, to, ownerId) {
+  if (!baseGrid) baseGrid = buildGrid();
+  const grid = baseGrid.slice();
+  const [fx, fz] = cellOf(from.x, from.z);
+  for (let dz = -3; dz <= 3; dz++) for (let dx = -3; dx <= 3; dx++) { // free the seat the bot is leaving
+    const ix = fx + dx, iz = fz + dz;
+    if (inGrid(ix, iz)) { const [cx, cz] = centerOf(ix, iz); if (Math.hypot(cx - from.x, cz - from.z) < 1.1) grid[iz * GX + ix] = 0; }
+  }
+  const goal = nearestFree(grid, to.x, to.z); if (!goal) return null;
+  const start = [fx, fz], idx = (x, z) => z * GX + x;
+  const open = [[0, start[0], start[1]]], came = new Map(), gs = new Map([[idx(...start), 0]]);
+  const h = (x, z) => { const dx = Math.abs(x - goal[0]), dz = Math.abs(z - goal[1]); return Math.max(dx, dz) + 0.414 * Math.min(dx, dz); };
+  let found = false;
+  while (open.length) {
+    let bi = 0; for (let i = 1; i < open.length; i++) if (open[i][0] < open[bi][0]) bi = i;
+    const [, x, z] = open.splice(bi, 1)[0];
+    if (x === goal[0] && z === goal[1]) { found = true; break; }
+    for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) {
+      if (!dx && !dz) continue;
+      const nx = x + dx, nz = z + dz;
+      if (!inGrid(nx, nz) || grid[idx(nx, nz)]) continue;
+      if (dx && dz && (grid[idx(x + dx, z)] || grid[idx(x, z + dz)])) continue; // no corner cutting
+      const ng = gs.get(idx(x, z)) + (dx && dz ? 1.414 : 1);
+      if (ng < (gs.get(idx(nx, nz)) ?? Infinity)) { gs.set(idx(nx, nz), ng); came.set(idx(nx, nz), [x, z]); open.push([ng + h(nx, nz), nx, nz]); }
+    }
+  }
+  if (!found) return null;
+  let cur = goal; const cells = [cur];
+  while (came.has(idx(...cur))) { cur = came.get(idx(...cur)); cells.push(cur); }
+  cells.reverse();
+  const pts = cells.map(([ix, iz]) => centerOf(ix, iz));
+  pts[0] = [from.x, from.z];
+  const out = [pts[0]]; let anchor = 0; // string-pull: skip waypoints with a clear line of sight
+  for (let i = 2; i < pts.length; i++) if (!lineFree(grid, pts[anchor], pts[i])) { out.push(pts[i - 1]); anchor = i - 1; }
+  out.push(pts[pts.length - 1]);
+  return out.slice(1).map(([x, z]) => ({ x, z }));
+}
+const PLACES = roster.places || [];
+function resolveTarget(spec, id) {
+  if (!spec || spec === "desk") return "desk";
+  if (spec === "meeting") { // every bot has its own seat or standing spot, by its place in the roster
+    const seats = (roster.meeting && roster.meeting.seats) || [], i = Math.max(roster.bots.findIndex(b => b.id === id), 0);
+    return seats.length ? seats[i % seats.length] : null;
+  }
+  if (spec.startsWith("desk:")) { const o = desks[spec.slice(5)]; return o ? { x: o.gx + 2.3, z: o.gz + 1.3 } : null; }
+  const p = PLACES.find(q => q.id === spec); return p ? { x: p.x, z: p.z } : null;
+}
+function sendBot(id, spec) {
+  const d = desks[id]; if (!d) return false;
+  let target = resolveTarget(spec, id); if (!target) return false;
+  if (target === "desk") target = { x: d.home.x, z: d.home.z };
+  const path = findPath(d.pos, target, id);
+  if (!path) { showHint(`${d.name} can't find a way there`); return false; }
+  d.path = path; d.place = spec; d.endFace = target.face ? ({ e: 1, w: -1 }[target.face] ?? null) : null;
+  return true;
+}
+let hintTimer = null;
+function showHint(msg) { hint.style.display = "block"; hint.textContent = msg; clearTimeout(hintTimer); hintTimer = setTimeout(() => { if (!walk.on) hint.style.display = "none"; }, 2500); }
+function moveStep(dt, t) {
+  for (const d of Object.values(desks)) {
+    const moving = d.path.length > 0;
+    d.tag.element.classList.toggle("compact", d.place === "meeting" && !moving); // keep the crowded meeting room readable
+    d.walkW += ((moving ? 1 : 0) - d.walkW) * (1 - Math.exp(-dt * 8));
+    if (moving) {
+      const nx = d.path[0].x - d.pos.x, nz = d.path[0].z - d.pos.z, dist = Math.hypot(nx, nz), step = SPEED * dt;
+      if (dist <= step) { d.pos.x = d.path[0].x; d.pos.z = d.path[0].z; d.path.shift(); if (!d.path.length && d.endFace) d.face = d.endFace; }
+      else { d.pos.x += nx / dist * step; d.pos.z += nz / dist * step; d.heading = Math.atan2(-nx, -nz); if (Math.abs(nx) > 0.05) d.face = nx > 0 ? 1 : -1; }
+      d.mover.position.set(d.pos.x - d.home.x, 0, d.pos.z - d.home.z);
+    }
+    if (d.walkW < 0.02) continue;
+    const w = d.walkW, p = d.phase;
+    const bob = Math.abs(Math.sin(t * 10 + p));
+    if (d.voxel && d.voxel.userData.sprite) {
+      const spr = d.voxel.userData.sprite;
+      spr.position.y = 1.3 + w * bob * 0.14; spr.scale.x = 1.58 * d.face;
+    }
+    if (d.portraitObj) d.portraitObj.element.style.transform = `translateY(${-w * bob * 6}px) scaleX(${d.face})`;
+    d.bot.rotation.y = d.heading ?? 0;
+    d.armL.rotation.x = w * Math.sin(t * 9 + p) * 0.8; d.armR.rotation.x = -w * Math.sin(t * 9 + p) * 0.8;
+    d.armR.rotation.z = 0;
+    d.body.position.y = 1.35 + w * bob * 0.08;
+  }
+}
+
+// --- Panel: pick a place, go, come back, or click a spot on the floor
+const placeSel = document.getElementById("p-place");
+function fillPlaces() {
+  placeSel.textContent = "";
+  const add = (v, label, parent) => { const o = document.createElement("option"); o.value = v; o.textContent = label; parent.appendChild(o); };
+  const g1 = document.createElement("optgroup"); g1.label = "Places"; PLACES.forEach(p => add(p.id, p.name, g1)); placeSel.appendChild(g1);
+  const g2 = document.createElement("optgroup"); g2.label = "Visit a desk";
+  Object.entries(desks).forEach(([id, o]) => { if (id !== selected) add(`desk:${id}`, o.name, g2); }); placeSel.appendChild(g2);
+}
+const pick = { on: false };
+const btnPick = document.getElementById("p-pick");
+function setPick(on) { pick.on = on; btnPick.classList.toggle("on", on); document.body.style.cursor = on ? "crosshair" : ""; if (on) showHint("Click a spot on the floor"); }
+document.getElementById("p-go").onclick = () => { if (selected) sendBot(selected, placeSel.value); };
+document.getElementById("p-home").onclick = () => { if (selected) sendBot(selected, "desk"); };
+btnPick.onclick = () => setPick(!pick.on);
+const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), floorHit = new THREE.Vector3();
+function pickFloor(e) {
+  ptr.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  ray.setFromCamera(ptr, camera);
+  if (!ray.ray.intersectPlane(floorPlane, floorHit)) return;
+  e.stopImmediatePropagation(); setPick(false);
+  if (selected) sendTo(selected, { x: floorHit.x, z: floorHit.z });
+}
+function sendTo(id, target) {
+  const d = desks[id], path = findPath(d.pos, target, id);
+  if (!path) { showHint(`${d.name} can't find a way there`); return false; }
+  d.path = path; d.place = "custom"; return true;
+}
+renderer.domElement.addEventListener("click", e => { if (pick.on && !walk.on) pickFloor(e); }, true);
+
+window.__office = { desks, refreshTag, walkStep, moveStep, goto: sendBot, refresh() { if (selected) showPanel(selected); } };
   loadStatus(); setInterval(loadStatus, 5000);
 }
 boot();
@@ -545,10 +1028,11 @@ async function loadStatus() {
       const d = desks[id]; if (!d) continue;
       d.state = STATE_COLOR[s.state] ? s.state : "idle"; d.task = s.task || "";
       d.target.setHex(STATE_COLOR[d.state]);
-      d.el.querySelector("i").textContent = d.state === "idle" ? "idle" : d.task;
+      if (s.goto !== d.lastGoto) { d.lastGoto = s.goto; window.__office.goto(id, s.goto || "desk"); }
+      window.__office.refreshTag(id);
     }
     document.getElementById("updated").textContent = "Status updated " + new Date(data.updated).toLocaleString("en-GB", { timeZone: "Asia/Jakarta", dateStyle: "medium", timeStyle: "short" }) + " WIB";
-    if (selected) showPanel(selected);
+    window.__office.refresh();
   } catch (e) { document.getElementById("updated").textContent = "Couldn't read status.json"; }
 }
 const clock = new THREE.Clock();
@@ -573,7 +1057,7 @@ renderer.setAnimationLoop(() => {
     if (d.voxel && d.voxel.userData.sprite) {
       const spr = d.voxel.userData.sprite;
       spr.position.y = 1.3 + W * Math.abs(Math.sin(t * 7 + p)) * 0.08 + I * Math.sin(t * 1.8 + p) * 0.03;
-      spr.scale.x = A ? -1.7 : 1.7; // flip when waiting
+      spr.scale.x = A ? -1.58 : 1.58; // flip when waiting
     }
     if (d.portraitObj) {
       const elp = d.portraitObj.element;
@@ -585,7 +1069,10 @@ renderer.setAnimationLoop(() => {
     d.light.scale.setScalar(1 + A * Math.sin(t * 4) * 0.3);
     d.glow.material.opacity = 0.2 + W * (0.35 + Math.sin(t * 9 + p) * 0.05) + A * 0.1;
   }
-  controls.update(); renderer.render(scene, camera); labels.render(scene, camera);
+  if (window.__office) { genzTick(t); window.__office.moveStep(dt, t); window.__office.walkStep(dt); }
+  for (const b of blinkers) b.m.material.color.setHex(Math.sin(t * 5 + b.p) > 0.2 ? b.on : 0x1f2937);
+  if (controls.enabled) controls.update();
+  renderer.render(scene, camera); labels.render(scene, camera);
 });
 addEventListener("resize", () => {
   camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();

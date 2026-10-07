@@ -1,0 +1,411 @@
+{
+  "zones": [
+    {
+      "name": "Leadership",
+      "color": "0x7eb6ff",
+      "x": -13,
+      "z": -7
+    },
+    {
+      "name": "Research & Data",
+      "color": "0x8fd0b0",
+      "x": 0,
+      "z": -7
+    },
+    {
+      "name": "Engineering",
+      "color": "0x22d3ee",
+      "x": 13,
+      "z": -7
+    },
+    {
+      "name": "Content",
+      "color": "0xe07a5f",
+      "x": -13,
+      "z": 7
+    },
+    {
+      "name": "Personal",
+      "color": "0xc4b5fd",
+      "x": 0,
+      "z": 7
+    },
+    {
+      "name": "Project Teams",
+      "color": "0xf0b429",
+      "x": 13,
+      "z": 7
+    }
+  ],
+  "bots": [
+    {
+      "id": "danny",
+      "name": "Danny",
+      "zone": "Leadership",
+      "role": "You. Every ask starts here.",
+      "agent": null,
+      "portrait": null,
+      "voxel": null
+    },
+    {
+      "id": "cos",
+      "name": "Chief of Staff",
+      "zone": "Leadership",
+      "role": "Turns Danny's asks into work across the bots and keeps the team aligned.",
+      "agent": "deka-cos",
+      "portrait": "portraits/cos.png",
+      "voxel": "cos"
+    },
+    {
+      "id": "botres",
+      "name": "Bot Resources",
+      "zone": "Leadership",
+      "role": "Job descriptions and policies for how the bots work together.",
+      "agent": "deka-botres",
+      "portrait": "portraits/botres.png",
+      "voxel": "teal"
+    },
+    {
+      "id": "research",
+      "name": "Research",
+      "zone": "Research & Data",
+      "role": "Finds and sources information on the web.",
+      "agent": "deka-research",
+      "portrait": "portraits/research.png",
+      "voxel": "research",
+      "workplace": "whiteboard"
+    },
+    {
+      "id": "data",
+      "name": "Data",
+      "zone": "Research & Data",
+      "role": "Collects, cleans, analyzes, and interprets data.",
+      "agent": "deka-data",
+      "portrait": "portraits/data.png",
+      "voxel": "data",
+      "workplace": "whiteboard"
+    },
+    {
+      "id": "aidigest",
+      "name": "AI Digest",
+      "zone": "Research & Data",
+      "role": "AI news digest.",
+      "agent": "deka-aidigest",
+      "portrait": null,
+      "voxel": null
+    },
+    {
+      "id": "engineer",
+      "name": "Engineer",
+      "zone": "Engineering",
+      "role": "Code, automations, bot team tooling, and Sheets engineering.",
+      "agent": "deka-engineer",
+      "portrait": "portraits/engineer.png",
+      "voxel": "engineer",
+      "workplace": "server-racks"
+    },
+    {
+      "id": "slide",
+      "name": "Slide",
+      "zone": "Content",
+      "role": "Designs and produces slide decks.",
+      "agent": "deka-slide",
+      "portrait": "portraits/slide.png",
+      "voxel": "slide"
+    },
+    {
+      "id": "social",
+      "name": "Social",
+      "zone": "Content",
+      "role": "Scripts and posts content for Instagram, LinkedIn, and YouTube.",
+      "agent": "deka-social",
+      "portrait": "portraits/social.png",
+      "voxel": "social"
+    },
+    {
+      "id": "learning",
+      "name": "Learning Material Team",
+      "zone": "Content",
+      "role": "Learning materials.",
+      "agent": "deka-learning",
+      "portrait": null,
+      "voxel": null
+    },
+    {
+      "id": "thinking",
+      "name": "Thinking Intelligence",
+      "zone": "Content",
+      "role": "Danny's book on thinking intelligence in the AI era.",
+      "agent": "deka-thinking",
+      "portrait": null,
+      "voxel": null
+    },
+    {
+      "id": "design",
+      "name": "Design",
+      "zone": "Content",
+      "role": "Icons, logos, pictures, and illustrations for Danny and the bot team.",
+      "agent": "deka-design",
+      "portrait": "portraits/design.png",
+      "voxel": "design"
+    },
+    {
+      "id": "story",
+      "name": "Storytelling",
+      "zone": "Content",
+      "role": "Writes the stories behind Danny's Instagram, LinkedIn, and YouTube content.",
+      "agent": "deka-story",
+      "portrait": "portraits/story.png",
+      "voxel": "purple"
+    },
+    {
+      "id": "brain",
+      "name": "2nd Brain",
+      "zone": "Personal",
+      "role": "Notes, priorities, decisions, and reminders.",
+      "agent": "deka-brain",
+      "portrait": "portraits/brain.png",
+      "voxel": "maroon"
+    },
+    {
+      "id": "travel",
+      "name": "Travel",
+      "zone": "Personal",
+      "role": "Plans and arranges Danny's travel.",
+      "agent": "deka-travel",
+      "portrait": null,
+      "voxel": null
+    },
+    {
+      "id": "expense",
+      "name": "Expense",
+      "zone": "Personal",
+      "role": "Tracks daily expenses.",
+      "agent": "deka-expense",
+      "portrait": null,
+      "voxel": null
+    },
+    {
+      "id": "health",
+      "name": "Health",
+      "zone": "Personal",
+      "role": "Tracks Danny's health.",
+      "agent": "deka-health",
+      "portrait": null,
+      "voxel": null
+    },
+    {
+      "id": "strategy",
+      "name": "Strategy Team",
+      "zone": "Project Teams",
+      "role": "Strategy work.",
+      "agent": null,
+      "portrait": null,
+      "voxel": null
+    },
+    {
+      "id": "proposal",
+      "name": "Proposal Team",
+      "zone": "Project Teams",
+      "role": "Client proposals.",
+      "agent": "deka-proposal",
+      "portrait": null,
+      "voxel": null
+    },
+    {
+      "id": "contentteam",
+      "name": "Content Creation Team",
+      "zone": "Project Teams",
+      "role": "Content creation.",
+      "agent": null,
+      "portrait": null,
+      "voxel": null
+    }
+  ],
+  "places": [
+    {
+      "id": "entrance",
+      "name": "Entrance",
+      "x": 0,
+      "z": 17.2
+    },
+    {
+      "id": "water-cooler",
+      "name": "Water cooler",
+      "x": 4.5,
+      "z": 16.2
+    },
+    {
+      "id": "corridor",
+      "name": "Central corridor",
+      "x": 0,
+      "z": 1.7
+    },
+    {
+      "id": "lounge",
+      "name": "Lounge",
+      "x": -20.5,
+      "z": -8
+    },
+    {
+      "id": "whiteboard",
+      "name": "Whiteboard (Research)",
+      "x": -4,
+      "z": -17.6
+    },
+    {
+      "id": "server-racks",
+      "name": "Server racks (Engineering)",
+      "x": 15.5,
+      "z": -8.2
+    },
+    {
+      "id": "meeting",
+      "name": "Meeting room (team)",
+      "x": 24.3,
+      "z": -8
+    },
+    {
+      "id": "sofa",
+      "name": "Sofa lounge",
+      "x": -23.6,
+      "z": 3.3
+    },
+    {
+      "id": "game-station",
+      "name": "Game station",
+      "x": -21.4,
+      "z": -9.2
+    },
+    {
+      "id": "boba-bar",
+      "name": "Boba bar",
+      "x": 24.2,
+      "z": 15.4
+    }
+  ],
+  "meeting": {
+    "seats": [
+      {
+        "x": 22.4,
+        "z": -10.8,
+        "face": "e",
+        "sit": true
+      },
+      {
+        "x": 22.4,
+        "z": -9.4,
+        "face": "e",
+        "sit": true
+      },
+      {
+        "x": 22.4,
+        "z": -8,
+        "face": "e",
+        "sit": true
+      },
+      {
+        "x": 22.4,
+        "z": -6.6,
+        "face": "e",
+        "sit": true
+      },
+      {
+        "x": 22.4,
+        "z": -5.2,
+        "face": "e",
+        "sit": true
+      },
+      {
+        "x": 26.6,
+        "z": -10.8,
+        "face": "w",
+        "sit": true
+      },
+      {
+        "x": 26.6,
+        "z": -9.4,
+        "face": "w",
+        "sit": true
+      },
+      {
+        "x": 26.6,
+        "z": -8,
+        "face": "w",
+        "sit": true
+      },
+      {
+        "x": 26.6,
+        "z": -6.6,
+        "face": "w",
+        "sit": true
+      },
+      {
+        "x": 26.6,
+        "z": -5.2,
+        "face": "w",
+        "sit": true
+      },
+      {
+        "x": 24.3,
+        "z": -12.3,
+        "face": "s",
+        "sit": true
+      },
+      {
+        "x": 24.3,
+        "z": -3.7,
+        "face": "n",
+        "sit": true
+      },
+      {
+        "x": 22.4,
+        "z": -13.8,
+        "face": "s",
+        "sit": false
+      },
+      {
+        "x": 23.8,
+        "z": -13.8,
+        "face": "s",
+        "sit": false
+      },
+      {
+        "x": 25.2,
+        "z": -13.8,
+        "face": "s",
+        "sit": false
+      },
+      {
+        "x": 26.6,
+        "z": -13.8,
+        "face": "s",
+        "sit": false
+      },
+      {
+        "x": 22.4,
+        "z": -2.2,
+        "face": "n",
+        "sit": false
+      },
+      {
+        "x": 23.8,
+        "z": -2.2,
+        "face": "n",
+        "sit": false
+      },
+      {
+        "x": 25.2,
+        "z": -2.2,
+        "face": "n",
+        "sit": false
+      },
+      {
+        "x": 26.6,
+        "z": -2.2,
+        "face": "n",
+        "sit": false
+      }
+    ]
+  }
+}
