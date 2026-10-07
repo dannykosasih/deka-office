@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-07T09:36:03+07:00",
+  "updated": "2026-10-07T09:38:33+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -30,8 +30,8 @@
       "task": "building deck"
     },
     "social": {
-      "state": "working",
-      "task": "Siklus Agentic AI #3 Keuangan"
+      "state": "waiting",
+      "task": "Caption #03 siap, menunggu review Danny"
     },
     "learning": {
       "state": "working",
