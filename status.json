@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-07T13:23:30+07:00",
+  "updated": "2026-10-07T13:56:53+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -14,8 +14,8 @@
       "task": "updating role guides"
     },
     "research": {
-      "state": "idle",
-      "task": "Done"
+      "state": "working",
+      "task": "Restoring sport data"
     },
     "data": {
       "state": "idle",
