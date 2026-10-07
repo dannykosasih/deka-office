@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-07T09:24:18+07:00",
+  "updated": "2026-10-07T09:24:54+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -14,8 +14,8 @@
       "task": "updating role guides"
     },
     "research": {
-      "state": "working",
-      "task": "agentic AI finance use case"
+      "state": "waiting",
+      "task": "finance research handed off"
     },
     "data": {
       "state": "waiting",
