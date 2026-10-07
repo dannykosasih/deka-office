@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-07T10:16:45+07:00",
+  "updated": "2026-10-07T10:18:29+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -19,15 +19,15 @@
     },
     "data": {
       "state": "idle",
-      "task": "carousel #03 dicek"
+      "task": "alur Digest 3 siap"
     },
     "aidigest": {
       "state": "working",
       "task": "compiling AI news"
     },
     "slide": {
-      "state": "working",
-      "task": "building deck"
+      "state": "waiting",
+      "task": "Menunggu alur slide AI Digest cycle 3"
     },
     "social": {
       "state": "waiting",
