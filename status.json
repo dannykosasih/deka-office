@@ -1,85 +1,85 @@
 {
-  "updated": "2026-10-08T22:16:51+07:00",
+  "updated": "2026-10-08T22:18:03+07:00",
   "bots": {
     "danny": {
       "state": "working",
-      "task": "reviewing priorities"
+      "task": "training & mentoring"
     },
     "cos": {
       "state": "working",
-      "task": "aligning the team"
+      "task": "coordinating the team"
     },
     "botres": {
-      "state": "working",
-      "task": "updating role guides"
+      "state": "idle",
+      "task": "standing by"
     },
     "research": {
       "state": "idle",
-      "task": "Done"
+      "task": "task complete"
     },
     "data": {
       "state": "idle",
-      "task": "selesai"
+      "task": "task complete"
     },
     "aidigest": {
-      "state": "working",
-      "task": "compiling AI news"
+      "state": "idle",
+      "task": "paused"
     },
     "slide": {
-      "state": "waiting",
-      "task": "waiting on data"
+      "state": "idle",
+      "task": "deck delivered"
     },
     "social": {
       "state": "idle",
-      "task": "Cycle di-pause sampai Danny lanjut"
+      "task": "paused"
     },
     "learning": {
-      "state": "working",
-      "task": "outlining lesson"
+      "state": "idle",
+      "task": "standing by"
     },
     "thinking": {
-      "state": "working",
-      "task": "drafting chapter"
+      "state": "waiting",
+      "task": "waiting on Danny's input"
     },
     "brain": {
-      "state": "working",
-      "task": "sorting notes"
+      "state": "idle",
+      "task": "standing by"
     },
     "travel": {
-      "state": "working",
-      "task": "comparing options"
+      "state": "waiting",
+      "task": "waiting on Danny's input"
     },
     "expense": {
-      "state": "working",
-      "task": "logging expenses"
+      "state": "idle",
+      "task": "standing by"
     },
     "health": {
       "state": "idle",
-      "task": "Siap log kesehatan"
+      "task": "standing by"
     },
     "strategy": {
-      "state": "working",
-      "task": "analyzing options"
+      "state": "idle",
+      "task": "task complete"
     },
     "proposal": {
-      "state": "working",
-      "task": "drafting proposal"
+      "state": "waiting",
+      "task": "revision on hold"
     },
     "engineer": {
       "state": "working",
-      "task": "updating office status"
+      "task": "updating the office"
     },
     "design": {
-      "state": "working",
-      "task": "sketching visuals"
+      "state": "idle",
+      "task": "standing by"
     },
     "story": {
-      "state": "working",
-      "task": "writing story"
+      "state": "idle",
+      "task": "standing by"
     },
     "contentteam": {
-      "state": "working",
-      "task": "planning content"
+      "state": "idle",
+      "task": "paused"
     }
   }
 }
