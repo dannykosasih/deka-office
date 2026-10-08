@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-07T13:58:07+07:00",
+  "updated": "2026-10-08T22:16:51+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -27,7 +27,7 @@
     },
     "slide": {
       "state": "waiting",
-      "task": "Menunggu data Maps IFG Life"
+      "task": "waiting on data"
     },
     "social": {
       "state": "idle",
@@ -67,7 +67,7 @@
     },
     "engineer": {
       "state": "working",
-      "task": "polishing the office"
+      "task": "updating office status"
     },
     "design": {
       "state": "working",
