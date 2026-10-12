@@ -77,7 +77,9 @@ function connectLive() {
   es.addEventListener("status", e => { liveOn = true; try { applyStatus(JSON.parse(e.data)); } catch (err) { console.warn(err); } });
   es.onerror = () => { liveOn = false; $("updated").textContent = lastText; if (es.readyState === EventSource.CLOSED) es.close(); };
 }
-loadStatus(); connectLive(); setInterval(() => { if (!liveOn) loadStatus(); }, 5000);
+// On dekabot.app there is no status.json or /events: activity arrives from the chat instead (see the bridge below).
+if (location.hostname.endsWith("dekabot.app")) $("updated").textContent = "Live from the DeKa Bots chat";
+else { loadStatus(); connectLive(); setInterval(() => { if (!liveOn) loadStatus(); }, 5000); }
 
 // ---------- DeKa Bots chat app (dekabot.app) ----------
 // The chat page posts {bot, state, from?} on the "deka-office" channel whenever a bot starts, waits for approval or finishes.
@@ -100,6 +102,31 @@ function applyAppEvent(e) {
   if (e.state === "working") setTimeout(gather, e.from ? 3300 : 0); // let the hand-off animation finish first
   else if (e.state === "idle" && b.mode === "app") backToDesk(b);
 }
+// Other devices: the chat server keeps the latest state of each bot; poll it (adaptive, and only while this tab is visible).
+let relayOff = false, relayTimer = null;
+async function pollRelay() {
+  if (relayOff) return;
+  let next = 12000;
+  try {
+    if (!document.hidden) {
+      const res = await fetch("/api/office/state", { credentials: "same-origin", cache: "no-store" });
+      if (res.status === 401) { $("updated").textContent = "Sign in at dekabot.app to see live chat activity"; relayOff = true; return; }
+      const d = await res.json();
+      if (!d.enabled) { relayOff = true; return; }
+      let active = false;
+      for (const [id, r] of Object.entries(d.bots || {})) {
+        const age = d.now - r.ts; let st = r.state;
+        if (st === "working" && age > 330) st = "idle";   // a chat request cannot run longer than 5 minutes
+        if (st === "waiting" && age > 1800) st = "idle";  // an approval left alone for 30 minutes
+        if (st !== "idle") active = true;
+        if ((appState[id] || "idle") !== st) applyAppEvent({ bot: id, state: st, from: age < 10 ? r.from : undefined });
+      }
+      $("updated").textContent = "Live from the DeKa Bots chat · all devices"; next = active ? 3000 : 12000;
+    }
+  } catch (e) { next = 15000; }
+  relayTimer = setTimeout(pollRelay, next);
+}
+if (location.hostname.endsWith("dekabot.app") || location.search.includes("relay=1")) { pollRelay(); document.addEventListener("visibilitychange", () => { if (!document.hidden && !relayOff) { clearTimeout(relayTimer); pollRelay(); } }); }
 try { new BroadcastChannel("deka-office").onmessage = ev => { try { applyAppEvent(ev.data || {}); } catch (err) { console.warn(err); } }; } catch (e) { /* no BroadcastChannel */ }
 
 // ---------- panel ----------
