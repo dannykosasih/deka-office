@@ -244,4 +244,4 @@ renderer.setAnimationLoop(() => {
   document.body.classList.toggle("far", camera.position.distanceTo(controls.target) > 42); // fewer words on tags when zoomed out
   controls.update(); renderer.render(scene, camera); css.render(scene, camera);
 });
-window.__game = { bots, sendBot, giveOrder, runDemo, camera, controls };
+window.__game = { bots, sendBot, giveOrder, runDemo, camera, controls, renderer, scene };
