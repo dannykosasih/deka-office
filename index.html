@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  // office.dannykosasih.com now shows the same office as dekabot.app/office. Only on that host, so local and GitHub copies still work.
+  if (location.hostname === "office.dannykosasih.com") location.replace("https://dekabot.app/office/");
+</script>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>DeKa Office</title>
