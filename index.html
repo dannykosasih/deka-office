@@ -1018,12 +1018,27 @@ function sendTo(id, target) {
 renderer.domElement.addEventListener("click", e => { if (pick.on && !walk.on) pickFloor(e); }, true);
 
 window.__office = { desks, refreshTag, walkStep, moveStep, goto: sendBot, refresh() { if (selected) showPanel(selected); } };
-  loadStatus(); setInterval(loadStatus, 5000);
+  loadStatus(); setInterval(() => { if (!liveOn) loadStatus(); }, 5000); // polling is only the fallback when no live stream
 }
 boot();
+// Live updates: realtime-server.py pushes status.json over Server-Sent Events. On GitHub Pages
+// there is no /events, so the stream closes and the page keeps polling every 5 seconds.
+let liveOn = false, lastStatusText = "";
+function connectLive() {
+  if (!window.EventSource) return;
+  const es = new EventSource("events");
+  es.onopen = () => { liveOn = true; };
+  es.addEventListener("status", e => { liveOn = true; try { applyStatus(JSON.parse(e.data)); } catch (err) { console.warn("bad status event", err); } });
+  es.onerror = () => { liveOn = false; document.getElementById("updated").textContent = lastStatusText; if (es.readyState === EventSource.CLOSED) es.close(); };
+}
+connectLive();
 async function loadStatus() {
+  try { applyStatus(await (await fetch("status.json?t=" + Date.now())).json()); }
+  catch (e) { document.getElementById("updated").textContent = "Couldn't read status.json"; }
+}
+function applyStatus(data) {
+  if (!window.__office) return; // scene not ready yet; boot() loads the status itself
   try {
-    const res = await fetch("status.json?t=" + Date.now()); const data = await res.json();
     for (const [id, s] of Object.entries(data.bots || {})) {
       const d = desks[id]; if (!d) continue;
       d.state = STATE_COLOR[s.state] ? s.state : "idle"; d.task = s.task || "";
@@ -1031,7 +1046,8 @@ async function loadStatus() {
       if (s.goto !== d.lastGoto) { d.lastGoto = s.goto; window.__office.goto(id, s.goto || "desk"); }
       window.__office.refreshTag(id);
     }
-    document.getElementById("updated").textContent = "Status updated " + new Date(data.updated).toLocaleString("en-GB", { timeZone: "Asia/Jakarta", dateStyle: "medium", timeStyle: "short" }) + " WIB";
+    lastStatusText = "Status updated " + new Date(data.updated).toLocaleString("en-GB", { timeZone: "Asia/Jakarta", dateStyle: "medium", timeStyle: "short" }) + " WIB";
+    document.getElementById("updated").textContent = liveOn ? lastStatusText + " · live" : lastStatusText;
     window.__office.refresh();
   } catch (e) { document.getElementById("updated").textContent = "Couldn't read status.json"; }
 }

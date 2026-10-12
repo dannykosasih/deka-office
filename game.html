@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DeKa Office - Game View</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0d1220; color: #e8eef8; font-family: system-ui, sans-serif; }
+  #title { position: fixed; left: 20px; top: 14px; pointer-events: none; }
+  #title h1 { font-size: 20px; margin: 0; font-weight: 700; letter-spacing: 0.02em; }
+  #title p { margin: 4px 0 0; font-size: 13px; opacity: 0.7; }
+  #rooms { position: fixed; left: 50%; top: 12px; transform: translateX(-50%); display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; max-width: 62vw; }
+  #rooms button, #hud button { background: rgba(20,28,48,0.9); color: #e8eef8; border: 1px solid #2a3756; border-radius: 999px; padding: 5px 11px; cursor: pointer; font: inherit; font-size: 12px; }
+  #rooms button:hover, #hud button:hover { background: #2d4a86; }
+  #hud { position: fixed; right: 16px; bottom: 16px; display: flex; gap: 8px; }
+  #hud button.on { background: #2d4a86; border-color: #7eb6ff; }
+  #feed { position: fixed; left: 16px; bottom: 16px; width: 360px; max-width: 40vw; font-size: 12px; line-height: 1.5; background: rgba(13,18,32,0.82); border: 1px solid #2a3756; border-radius: 10px; padding: 8px 10px; display: none; pointer-events: none; }
+  #hint { position: fixed; left: 50%; bottom: 64px; transform: translateX(-50%); font-size: 13px; padding: 6px 12px; border-radius: 8px; background: rgba(13,18,32,0.9); border: 1px solid #33415f; display: none; pointer-events: none; }
+  #panel { position: fixed; right: 16px; top: 14px; width: 300px; max-height: calc(100vh - 80px); overflow: auto; background: rgba(20,28,48,0.94); border: 1px solid #2a3756; border-radius: 14px; padding: 16px; display: none; }
+  #panel h2 { margin: 0 0 4px; font-size: 18px; }
+  #panel .team { font-size: 12px; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.06em; }
+  #panel .role { font-size: 14px; line-height: 1.45; margin: 10px 0; }
+  #panel .now { font-size: 14px; padding: 8px 10px; background: #18213a; border-radius: 8px; }
+  #panel .close { position: absolute; right: 14px; top: 10px; cursor: pointer; opacity: 0.6; }
+  #panel .sec { margin-top: 14px; font-size: 11px; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.06em; }
+  #panel .row { display: flex; gap: 6px; margin-top: 6px; }
+  #panel select, #panel input { flex: 1; min-width: 0; background: #0f1628; border: 1px solid #2a3756; color: inherit; border-radius: 8px; padding: 7px 9px; font: inherit; font-size: 13px; }
+  #panel button { background: #2d4a86; color: #fff; border: 0; border-radius: 8px; padding: 7px 11px; cursor: pointer; font: inherit; font-size: 12px; }
+  #panel .note { font-size: 11px; opacity: 0.55; margin-top: 10px; line-height: 1.4; }
+  .tag { font-size: 11px; padding: 3px 7px; border-radius: 8px; background: rgba(13,18,32,0.88); border: 1px solid #33415f; white-space: nowrap; pointer-events: none; text-align: center; }
+  .tag b { display: block; font-size: 12px; } .tag i { font-style: normal; opacity: 0.75; }
+  .bubble { font-size: 13px; padding: 5px 10px; border-radius: 12px; background: #fff; color: #111827; box-shadow: 0 3px 12px rgba(0,0,0,0.4); white-space: nowrap; pointer-events: none; font-weight: 600; }
+  body.far .tag i { display: none; }
+  body.far .tag { font-size: 10px; padding: 2px 5px; }
+  .zone { font-weight: 700; letter-spacing: 0.14em; pointer-events: none; opacity: 0.9; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="title"><h1>DeKa Office</h1><p id="updated">Loading status...</p></div>
+<div id="rooms"></div>
+<div id="feed"></div>
+<div id="hint"></div>
+<div id="hud"><button id="btn-play">Play as Danny (P)</button><button id="btn-demo">Demo (D)</button><button id="btn-life">Life (L)</button><button id="btn-night">Night (N)</button></div>
+<div id="panel"><span class="close" id="p-close">x</span>
+  <div class="team" id="p-zone"></div><h2 id="p-name"></h2><div class="role" id="p-role"></div><div class="now" id="p-now"></div>
+  <div class="row"><button id="p-chat" style="display:none">Open real chat with this bot</button></div>
+  <div class="sec">Send somewhere</div>
+  <div class="row"><select id="p-place"></select></div>
+  <div class="row"><button id="p-go">Go there</button><button id="p-home">Back to desk</button></div>
+  <div class="sec">Give an order to</div>
+  <div class="row"><select id="p-to"></select></div>
+  <div class="row"><input id="p-text" maxlength="80" placeholder="Task (generic label)" /><button id="p-order">Send</button></div>
+  <div class="note">The page is public: keep labels generic, with no client names. Orders here are a visual demo and are not sent to the real agents.</div>
+</div>
+<script type="module" src="game/main.js"></script>
+</body>
+</html>
