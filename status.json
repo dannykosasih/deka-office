@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-13T12:05:40+07:00",
+  "updated": "2026-10-13T12:06:10+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -14,8 +14,8 @@
       "task": "standing by"
     },
     "research": {
-      "state": "idle",
-      "task": "Done"
+      "state": "working",
+      "task": "branch mapping"
     },
     "data": {
       "state": "waiting",
