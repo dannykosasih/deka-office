@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-16T10:05:25+07:00",
+  "updated": "2026-10-16T10:06:30+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -14,8 +14,8 @@
       "task": "standing by"
     },
     "research": {
-      "state": "idle",
-      "task": "Done"
+      "state": "working",
+      "task": "1km v2"
     },
     "data": {
       "state": "idle",
