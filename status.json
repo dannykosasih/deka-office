@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-16T10:16:03+07:00",
+  "updated": "2026-10-17T12:13:09+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -14,12 +14,12 @@
       "task": "standing by"
     },
     "research": {
-      "state": "idle",
-      "task": "Done"
+      "state": "working",
+      "task": "place mapping"
     },
     "data": {
-      "state": "idle",
-      "task": "selesai"
+      "state": "waiting",
+      "task": "menunggu daftar lokasi"
     },
     "aidigest": {
       "state": "idle",
