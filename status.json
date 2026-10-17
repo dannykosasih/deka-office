@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-17T12:36:55+07:00",
+  "updated": "2026-10-17T12:41:26+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -18,8 +18,8 @@
       "task": "Done"
     },
     "data": {
-      "state": "working",
-      "task": "scraping data"
+      "state": "idle",
+      "task": "selesai"
     },
     "aidigest": {
       "state": "idle",
