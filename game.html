@@ -17,6 +17,8 @@
   #rooms button, #hud button { background: rgba(20,28,48,0.9); color: #e8eef8; border: 1px solid #2a3756; border-radius: 999px; padding: 5px 11px; cursor: pointer; font: inherit; font-size: 12px; }
   #rooms button:hover, #hud button:hover { background: #2d4a86; }
   #hud { position: fixed; right: 16px; bottom: 16px; display: flex; gap: 8px; }
+  #hud .lang { display: inline-flex; gap: 0; } #hud .lang button { border-radius: 0; padding: 5px 9px; } #hud .lang button:first-child { border-radius: 999px 0 0 999px; } #hud .lang button:last-child { border-radius: 0 999px 999px 0; }
+  #hud button[aria-pressed=true] { background: #2d4a86; border-color: #7eb6ff; }
   #hud button.on { background: #2d4a86; border-color: #7eb6ff; }
   #feed { position: fixed; left: 16px; bottom: 16px; width: 360px; max-width: 40vw; font-size: 12px; line-height: 1.5; background: rgba(13,18,32,0.82); border: 1px solid #2a3756; border-radius: 10px; padding: 8px 10px; display: none; pointer-events: none; }
   #hint { position: fixed; left: 50%; bottom: 64px; transform: translateX(-50%); font-size: 13px; padding: 6px 12px; border-radius: 8px; background: rgba(13,18,32,0.9); border: 1px solid #33415f; display: none; pointer-events: none; }
@@ -50,18 +52,19 @@
 <div id="rooms"></div>
 <div id="feed"></div>
 <div id="hint"></div>
-<div id="hud"><button id="btn-play">Play as Danny (P)</button><button id="btn-demo">Demo (D)</button><button id="btn-life">Life (L)</button><button id="btn-night">Night (N)</button></div>
+<div id="hud"><span class="lang" role="group" aria-label="Language / Bahasa"><button type="button" data-lang="id">ID</button><button type="button" data-lang="en">EN</button></span><button id="btn-play" data-i18n="play"></button><button id="btn-demo" data-i18n="demo"></button><button id="btn-life" data-i18n="life"></button><button id="btn-night" data-i18n="night"></button></div>
 <div id="panel"><span class="close" id="p-close">x</span>
   <div class="team" id="p-zone"></div><h2 id="p-name"></h2><div class="role" id="p-role"></div><div class="now" id="p-now"></div>
-  <div class="row"><button id="p-chat" style="display:none">Open real chat with this bot</button></div>
-  <div class="sec">Send somewhere</div>
+  <div class="row"><button id="p-chat" style="display:none" data-i18n="chat"></button></div>
+  <div class="sec" data-i18n="sec.go"></div>
   <div class="row"><select id="p-place"></select></div>
-  <div class="row"><button id="p-go">Go there</button><button id="p-home">Back to desk</button></div>
-  <div class="sec">Give an order to</div>
+  <div class="row"><button id="p-go" data-i18n="go"></button><button id="p-home" data-i18n="home"></button></div>
+  <div class="sec" data-i18n="sec.order"></div>
   <div class="row"><select id="p-to"></select></div>
-  <div class="row"><input id="p-text" maxlength="80" placeholder="Task (generic label)" /><button id="p-order">Send</button></div>
-  <div class="note">The page is public: keep labels generic, with no client names. Orders here are a visual demo and are not sent to the real agents.</div>
+  <div class="row"><input id="p-text" maxlength="80" data-i18n-attr="placeholder:ph" /><button id="p-order" data-i18n="order.send"></button></div>
+  <div class="note" data-i18n="note"></div>
 </div>
+<script src="lang.js"></script>
 <script type="module" src="game/main.js"></script>
 </body>
 </html>

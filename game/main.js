@@ -4,12 +4,13 @@ import { CSS2DRenderer } from "three/addons/renderers/CSS2DRenderer.js";
 import { scene, buildWorld, lights, labels, tickWorld, tickScreens, ROOMS } from "./world.js";
 import { buildGrid, isBlocked } from "./nav.js";
 import { bots, clickable, createBot, buildDesk, deskSpot, setTag, say, update as updateBots, STATE_COLOR } from "./bots.js";
+import { tr, onLang, has } from "./i18n.js";
 import { initLife, lifeState, PLACE_LIST, sendBot, backToDesk, giveOrder, runDemo, handOff } from "./life.js";
 
 const $ = id => document.getElementById(id);
 let roster;
 try { roster = await (await fetch("roster.json?t=" + Date.now())).json(); }
-catch (e) { $("updated").textContent = "Couldn't read roster.json"; throw e; }
+catch (e) { $("updated").textContent = tr("upd.noroster"); throw e; }
 
 // ---------- renderer, camera, light ----------
 scene.background = new THREE.Color(0x0d1220); scene.fog = new THREE.Fog(0x0d1220, 90, 190);
@@ -48,7 +49,9 @@ function log(msg) {
 initLife(roster, log);
 
 // ---------- status.json: live over SSE locally, polling on GitHub Pages ----------
-let liveOn = false, lastText = "";
+let liveOn = false, updKind = "loading", updDate = "";
+const ON_APP = location.hostname.endsWith("dekabot.app");
+function paintUpd() { $("updated").textContent = updKind === "status" ? tr("upd.status") + " " + updDate + (liveOn ? " · " + tr("upd.live") : "") : tr("upd." + updKind); }
 function applyStatus(data) {
   for (const [id, s] of Object.entries(data.bots || {})) {
     const b = bots[id]; if (!b) continue;
@@ -62,23 +65,22 @@ function applyStatus(data) {
     }
     setTag(b);
   }
-  lastText = "Status updated " + new Date(data.updated).toLocaleString("en-GB", { timeZone: "Asia/Jakarta", dateStyle: "medium", timeStyle: "short" }) + " WIB";
-  $("updated").textContent = liveOn ? lastText + " · live" : lastText;
+  updDate = new Date(data.updated).toLocaleString("en-GB", { timeZone: "Asia/Jakarta", dateStyle: "medium", timeStyle: "short" }) + " WIB"; updKind = "status"; paintUpd();
   if (selected) showPanel(selected);
 }
 async function loadStatus() {
   try { applyStatus(await (await fetch("status.json?t=" + Date.now())).json()); }
-  catch (e) { $("updated").textContent = location.hostname.endsWith("dekabot.app") ? "Live from the DeKa Bots chat" : "Couldn't read status.json"; }
+  catch (e) { updKind = ON_APP ? "chat" : "nostatus"; paintUpd(); }
 }
 function connectLive() {
   if (!window.EventSource) return;
   const es = new EventSource("events");
   es.onopen = () => { liveOn = true; };
   es.addEventListener("status", e => { liveOn = true; try { applyStatus(JSON.parse(e.data)); } catch (err) { console.warn(err); } });
-  es.onerror = () => { liveOn = false; $("updated").textContent = lastText; if (es.readyState === EventSource.CLOSED) es.close(); };
+  es.onerror = () => { liveOn = false; paintUpd(); if (es.readyState === EventSource.CLOSED) es.close(); };
 }
 // On dekabot.app there is no status.json or /events: activity arrives from the chat instead (see the bridge below).
-if (location.hostname.endsWith("dekabot.app")) $("updated").textContent = "Live from the DeKa Bots chat";
+if (ON_APP) { updKind = "chat"; paintUpd(); }
 else { loadStatus(); connectLive(); setInterval(() => { if (!liveOn) loadStatus(); }, 5000); }
 
 // ---------- DeKa Bots chat app (dekabot.app) ----------
@@ -90,7 +92,7 @@ function applyAppEvent(e) {
   const b = bots[e.bot]; if (!b || !["working", "waiting", "idle"].includes(e.state)) return;
   appState[e.bot] = e.state;
   if (e.state === "idle") { b.override = null; b.state = b.remote ? b.remote.state : "idle"; b.task = b.remote ? b.remote.task : ""; }
-  else { b.override = { state: e.state }; b.state = e.state; b.task = e.state === "working" ? "Working in the DeKa Bots chat" : "Waiting for your approval"; }
+  else { b.override = { state: e.state }; b.state = e.state; b.task = e.state === "working" ? tr("task.chat") : tr("task.wait"); }
   b.target.setHex(STATE_COLOR[b.state]); setTag(b);
   if (e.from && e.state === "working") handOff(e.from, e.bot);
   // one bot working walks to its workplace; two or more (a team job) meet in the meeting room; idle goes back to the desk
@@ -110,7 +112,7 @@ async function pollRelay() {
   try {
     if (!document.hidden) {
       const res = await fetch("/api/office/state", { credentials: "same-origin", cache: "no-store" });
-      if (res.status === 401) { $("updated").textContent = "Sign in at dekabot.app to see live chat activity"; relayOff = true; return; }
+      if (res.status === 401) { updKind = "signin"; paintUpd(); relayOff = true; return; }
       const d = await res.json();
       if (!d.enabled) { relayOff = true; return; }
       let active = false;
@@ -121,7 +123,7 @@ async function pollRelay() {
         if (st !== "idle") active = true;
         if ((appState[id] || "idle") !== st) applyAppEvent({ bot: id, state: st, from: age < 10 ? r.from : undefined });
       }
-      $("updated").textContent = "Live from the DeKa Bots chat · all devices"; next = active ? 3000 : 12000;
+      updKind = "chatAll"; paintUpd(); next = active ? 3000 : 12000;
     }
   } catch (e) { next = 15000; }
   relayTimer = setTimeout(pollRelay, next);
@@ -134,25 +136,25 @@ let selected = null;
 function fillSelects() {
   const place = $("p-place"), to = $("p-to"); place.textContent = ""; to.textContent = "";
   const add = (sel, v, t, parent) => { const o = document.createElement("option"); o.value = v; o.textContent = t; (parent || sel).appendChild(o); };
-  const g1 = document.createElement("optgroup"); g1.label = "Rooms and spots"; PLACE_LIST.forEach(([v, t]) => add(place, v, t, g1)); place.appendChild(g1);
-  const g2 = document.createElement("optgroup"); g2.label = "Visit a desk"; roster.bots.forEach(x => { if (x.id !== selected) add(place, "desk:" + x.id, x.name, g2); }); place.appendChild(g2);
+  const g1 = document.createElement("optgroup"); g1.label = tr("grp.spots"); PLACE_LIST.forEach(([v, t]) => add(place, v, has("place." + v) ? tr("place." + v) : t, g1)); place.appendChild(g1);
+  const g2 = document.createElement("optgroup"); g2.label = tr("grp.desk"); roster.bots.forEach(x => { if (x.id !== selected) add(place, "desk:" + x.id, x.name, g2); }); place.appendChild(g2);
   roster.bots.forEach(x => { if (x.id !== selected) add(to, x.id, x.name); });
 }
 function showPanel(id) {
   const b = bots[id]; if (!b) return; const changed = selected !== id; selected = id;
   $("p-zone").textContent = b.zone; $("p-name").textContent = b.name; $("p-role").textContent = b.role;
-  const word = { working: "Working on", waiting: "Waiting on Danny:", idle: "Idle." }[b.state];
-  $("p-now").textContent = b.mode === "activity" && b.activity ? b.activity.text : (b.state === "idle" ? `Idle. ${b.task}` : `${word} ${b.task}`);
+  const word = tr("st." + b.state);
+  $("p-now").textContent = b.mode === "activity" && b.activity ? b.activity.text : `${word} ${b.task}`.trim();
   const info = roster.bots.find(x => x.id === id); $("p-chat").style.display = info && info.agent ? "inline-block" : "none";
   $("panel").style.display = "block"; if (changed) fillSelects();
 }
 $("p-chat").onclick = () => { const b = bots[selected]; const info = roster.bots.find(x => x.id === selected); if (b && info && info.agent) window.open(CHAT_URL + "#" + info.agent, "_blank", "noopener"); };
 $("p-close").onclick = () => { $("panel").style.display = "none"; selected = null; };
-$("p-go").onclick = () => { if (selected && !sendBot(selected, $("p-place").value)) hint("No free spot there right now"); };
+$("p-go").onclick = () => { if (selected && !sendBot(selected, $("p-place").value)) hint(tr("hint.nospot")); };
 $("p-home").onclick = () => { if (selected) backToDesk(bots[selected]); };
 $("p-order").onclick = () => {
   const text = $("p-text").value.trim(); if (!selected || !text) return;
-  if (giveOrder(selected, $("p-to").value, text)) $("p-text").value = ""; else hint("Can't deliver that order");
+  if (giveOrder(selected, $("p-to").value, text)) $("p-text").value = ""; else hint(tr("hint.noorder"));
 };
 $("p-text").addEventListener("keydown", e => { if (e.key === "Enter") $("p-order").click(); });
 
@@ -170,22 +172,25 @@ function hint(msg, ms = 2500) { const h = $("hint"); h.textContent = msg; h.styl
 // ---------- camera: room chips ----------
 let goal = null;
 const chips = $("rooms");
-ROOMS.filter(r => r.name).concat([{ name: "Overview", id: "all" }]).forEach(r => {
-  const b = document.createElement("button"); b.textContent = r.name; b.style.borderColor = r.color ? "#" + r.color.toString(16).padStart(6, "0") : "";
-  b.onclick = () => {
-    if (player.on) setPlayer(false);
-    if (r.id === "all") goal = { t: new THREE.Vector3(0, 0, 2), p: new THREE.Vector3(34, 42, 52) };
-    else { const cx = (r.x1 + r.x2) / 2, cz = (r.z1 + r.z2) / 2; goal = { t: new THREE.Vector3(cx, 0, cz), p: new THREE.Vector3(cx + 11, 15, cz + 17) }; }
-  };
-  chips.appendChild(b);
-});
+function buildChips() {
+  chips.textContent = "";
+  ROOMS.filter(r => r.name).concat([{ name: "Overview", id: "all" }]).forEach(r => {
+    const b = document.createElement("button"); b.textContent = r.id === "all" ? tr("overview") : tr("room." + r.name); b.style.borderColor = r.color ? "#" + r.color.toString(16).padStart(6, "0") : "";
+    b.onclick = () => {
+      if (player.on) setPlayer(false);
+      if (r.id === "all") goal = { t: new THREE.Vector3(0, 0, 2), p: new THREE.Vector3(34, 42, 52) };
+      else { const cx = (r.x1 + r.x2) / 2, cz = (r.z1 + r.z2) / 2; goal = { t: new THREE.Vector3(cx, 0, cz), p: new THREE.Vector3(cx + 11, 15, cz + 17) }; }
+    };
+    chips.appendChild(b);
+  });
+}
 
 // ---------- play as Danny ----------
 const player = { on: false, keys: {} };
 function setPlayer(on) {
   const d = bots.danny; if (!d) return;
   player.on = on; $("btn-play").classList.toggle("on", on);
-  if (on) { d.path = []; d.mode = "player"; d.manualMove = true; d.state = "idle"; hint("WASD to walk, Shift to run, E to talk to a bot, drag to turn the camera, P to stop", 5000); goal = null; }
+  if (on) { d.path = []; d.mode = "player"; d.manualMove = true; d.state = "idle"; hint(tr("hint.play"), 5000); goal = null; }
   else { d.manualMove = false; backToDesk(d); }
 }
 function playerStep(dt) {
@@ -207,12 +212,12 @@ function playerStep(dt) {
   camera.position.set(t.x + ox, t.y + oy - 0, t.z + oz);
   // nearest bot to talk to
   let near = null, nd = 3.4; for (const o of Object.values(bots)) if (o !== d) { const dist = Math.hypot(o.pos.x - d.pos.x, o.pos.z - d.pos.z); if (dist < nd) { nd = dist; near = o; } }
-  player.near = near; if (near) hint(`E: talk to ${near.name}`, 400);
+  player.near = near; if (near) hint(tr("hint.talk", near.name), 400);
 }
 
 // ---------- buttons and keys ----------
 $("btn-play").onclick = () => setPlayer(!player.on);
-$("btn-life").onclick = () => { lifeState.ambient = !lifeState.ambient; $("btn-life").classList.toggle("on", lifeState.ambient); hint(lifeState.ambient ? "Idle bots take breaks again" : "Idle bots stay at their desks"); };
+$("btn-life").onclick = () => { lifeState.ambient = !lifeState.ambient; $("btn-life").classList.toggle("on", lifeState.ambient); hint(lifeState.ambient ? tr("hint.lifeOn") : tr("hint.lifeOff")); };
 $("btn-demo").onclick = runDemo;
 let night = false;
 function setNight(on) {
@@ -231,6 +236,18 @@ addEventListener("keydown", e => {
 });
 addEventListener("keyup", e => { player.keys[e.code] = false; });
 addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); css.setSize(innerWidth, innerHeight); });
+
+// ---------- language ----------
+function applyLang() {
+  [].forEach.call(document.querySelectorAll("[data-i18n]"), e => { e.textContent = tr(e.getAttribute("data-i18n")); });
+  [].forEach.call(document.querySelectorAll("[data-i18n-attr]"), e => e.getAttribute("data-i18n-attr").split(";").forEach(p => { const a = p.split(":"); e.setAttribute(a[0], tr(a[1])); }));
+  document.title = "DeKa Office";
+  buildChips(); paintUpd();
+  labels.forEach(l => { const el = l.element; if (!el.dataset.k) el.dataset.k = el.textContent; const name = ROOMS.map(r => r.name).find(n => n && n.toUpperCase() === el.dataset.k); el.textContent = name ? tr("room." + name).toUpperCase() : el.dataset.k; });
+  if (selected) { fillSelects(); showPanel(selected); }
+  Object.keys(bots).forEach(id => setTag(bots[id]));
+}
+onLang(applyLang);
 
 // ---------- loop ----------
 const clock = new THREE.Clock();

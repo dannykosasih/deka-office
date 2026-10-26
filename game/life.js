@@ -1,6 +1,7 @@
 // Behaviour: where a bot can go, what idle bots do for fun, and bots giving each other orders.
 import { slots, places } from "./world.js";
 import { bots, walkTo, say, setTag, atHome } from "./bots.js";
+import { tr } from "./i18n.js";
 
 let roster = null, log = () => {};
 export const lifeState = { ambient: true };
@@ -62,17 +63,17 @@ const ACTIVITIES = [
 function startActivity(b) {
   const total = ACTIVITIES.reduce((s, a) => s + a.w, 0); let r = Math.random() * total, a = ACTIVITIES[0];
   for (const x of ACTIVITIES) { if ((r -= x.w) <= 0) { a = x; break; } }
-  let target = null, text = a.text;
+  let target = null, text = tr("act." + a.kind);
   if (a.kind === "chat") {
     const others = Object.values(bots).filter(o => o !== b && o.mode === "desk" && atHome(o)); if (!others.length) return;
-    const o = pick(others); target = resolve("desk:" + o.id, b); text = "chatting with " + o.name; a = { ...a, other: o };
+    const o = pick(others); target = resolve("desk:" + o.id, b); text = tr("act.chat", o.name); a = { ...a, other: o };
   } else target = claim(a.kind, b.id);
   if (!target) return;
   cancel(b); taken.delete(target); if (a.kind !== "chat") taken.set(target, b.id);
   b.mode = "activity"; b.activity = { text }; setTag(b);
   const dur = rnd(...a.d) * 1000;
   const ok = walkTo(b, target, () => {
-    say(b, a.emoji + " " + text, dur); if (a.other) say(a.other, "💬 hey " + b.name.split(" ")[0] + "!", 2500);
+    say(b, a.emoji + " " + text, dur); if (a.other) say(a.other, tr("say.hey", b.name.split(" ")[0]), 2500);
     b.timer = setTimeout(() => backToDesk(b), dur);
   });
   if (!ok) { b.mode = "desk"; b.activity = null; release(b.id); }
@@ -97,13 +98,13 @@ export function giveOrder(fromId, toId, text, onDone) {
   const ok = walkTo(from, resolve("desk:" + toId, from), () => {
     say(from, "📋 " + text, 3500);
     setTimeout(() => {
-      say(to, "👍 on it!", 2200);
+      say(to, tr("say.ok"), 2200);
       cancel(to); to.mode = "order"; to.override = { state: "working", task: text };
       to.state = "working"; to.task = text; to.target.setHex(0x4ade80); setTag(to);
       const wp = (roster.bots.find(x => x.id === toId) || {}).workplace;
       const doWork = () => { // work at its desk (or at its workplace if it has one) for a while
         to.timer = setTimeout(() => {
-          to.override = null; say(to, "✅ done!", 2500); log(`✅ ${to.name} finished: ${text}`);
+          to.override = null; say(to, tr("say.done"), 2500); log(`${tr("log.done", to.name)}: ${text}`);
           if (to.remote) { to.state = to.remote.state; to.task = to.remote.task; to.target.setHex(({ working: 0x4ade80, waiting: 0xfbbf24, idle: 0x64748b })[to.state]); }
           else { to.state = "idle"; to.task = ""; to.target.setHex(0x64748b); }
           backToDesk(to); if (onDone) onDone(to);
@@ -121,11 +122,11 @@ export function giveOrder(fromId, toId, text, onDone) {
 // ---------- demo: Chief of Staff delegates, then the team meets ----------
 export function runDemo() {
   const lead = "cos", crew = [["research", "Find sources for the brief"], ["data", "Clean the dataset"], ["slide", "Draft the deck"], ["story", "Write the narrative"]];
-  log("🎬 Demo: Chief of Staff starts a team job");
+  log(tr("log.demo"));
   let done = 0;
   crew.forEach(([id, text], i) => setTimeout(() => giveOrder(lead, id, text, () => {
     if (++done === crew.length) {
-      log("🤝 Everyone meets to sync");
+      log(tr("log.sync"));
       [lead, ...crew.map(c => c[0])].forEach(x => { sendBot(x, "meeting", { onArrive: bb => say(bb, "🤝", 3000) }); });
       setTimeout(() => [lead, ...crew.map(c => c[0])].forEach(x => backToDesk(bots[x])), 16000);
     }
@@ -137,8 +138,8 @@ export function handOff(fromId, toId) {
   const from = bots[fromId], to = bots[toId]; if (!from || !to || from === to) return false;
   cancel(from); from.mode = "order";
   const ok = walkTo(from, resolve("desk:" + toId, from), () => {
-    say(from, "📋 new task", 2600);
-    setTimeout(() => say(to, "👍 on it!", 2200), 900);
+    say(from, tr("say.new"), 2600);
+    setTimeout(() => say(to, tr("say.ok"), 2200), 900);
     setTimeout(() => backToDesk(from), 2400);
   });
   if (!ok) backToDesk(from);

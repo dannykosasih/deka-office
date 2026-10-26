@@ -4,6 +4,7 @@ import { CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { scene, box, cyl, chair, obstacle, neon } from "./world.js";
 import { findPath } from "./nav.js";
+import { tr } from "./i18n.js";
 
 export const STATE_COLOR = { working: 0x4ade80, waiting: 0xfbbf24, idle: 0x64748b };
 export const bots = {};
@@ -76,8 +77,8 @@ export { buildDesk };
 
 export function setTag(b) {
   const n = b.extra.queued || 0;
-  const line = b.mode === "activity" && b.activity ? b.activity.text : (b.state === "idle" ? "idle" : b.task);
-  b.tagEl.querySelector("i").textContent = line + (n ? ` · ${n} queued` : "");
+  const line = b.mode === "activity" && b.activity ? b.activity.text : (b.state === "idle" ? tr("tag.idle") : b.task);
+  b.tagEl.querySelector("i").textContent = line + (n ? ` · ${tr("tag.queued", n)}` : "");
 }
 let bubbleTimers = new WeakMap();
 export function say(b, text, ms = 3200) {
