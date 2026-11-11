@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-11T21:47:36+07:00",
+  "updated": "2026-11-11T21:50:02+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -18,8 +18,8 @@
       "task": "Siaga"
     },
     "data": {
-      "state": "working",
-      "task": "memeriksa rujukan"
+      "state": "idle",
+      "task": "tersedia"
     },
     "aidigest": {
       "state": "idle",
