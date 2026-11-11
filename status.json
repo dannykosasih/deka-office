@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-11T21:13:11+07:00",
+  "updated": "2026-11-11T21:31:49+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -14,8 +14,8 @@
       "task": "standing by"
     },
     "research": {
-      "state": "idle",
-      "task": "Siaga"
+      "state": "working",
+      "task": "Riset sumber tools bisnis"
     },
     "data": {
       "state": "idle",
