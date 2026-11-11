@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-11T15:44:33+07:00",
+  "updated": "2026-11-11T15:50:22+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -14,8 +14,8 @@
       "task": "standing by"
     },
     "research": {
-      "state": "working",
-      "task": "Riset desain luxury entrepreneurship-innovation"
+      "state": "idle",
+      "task": "Siaga"
     },
     "data": {
       "state": "idle",
