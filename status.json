@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-11T21:50:02+07:00",
+  "updated": "2026-11-12T07:51:00+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -14,8 +14,8 @@
       "task": "standing by"
     },
     "research": {
-      "state": "idle",
-      "task": "Siaga"
+      "state": "working",
+      "task": "Riset fakta thinking.ai.id"
     },
     "data": {
       "state": "idle",
