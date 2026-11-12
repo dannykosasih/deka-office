@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-12T07:55:02+07:00",
+  "updated": "2026-11-12T13:11:32+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -14,12 +14,12 @@
       "task": "standing by"
     },
     "research": {
-      "state": "idle",
-      "task": "Siaga"
+      "state": "working",
+      "task": "Cek kanvas VPC live"
     },
     "data": {
-      "state": "idle",
-      "task": "tersedia"
+      "state": "working",
+      "task": "memeriksa tampilan situs"
     },
     "aidigest": {
       "state": "idle",
