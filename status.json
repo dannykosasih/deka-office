@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-14T20:54:42+07:00",
+  "updated": "2026-11-14T20:57:11+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -14,8 +14,8 @@
       "task": "standing by"
     },
     "research": {
-      "state": "working",
-      "task": "Recent research top-up for book"
+      "state": "idle",
+      "task": "Book sources delivered"
     },
     "data": {
       "state": "working",
