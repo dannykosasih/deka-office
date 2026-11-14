@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-14T20:19:10+07:00",
+  "updated": "2026-11-14T20:25:06+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -18,8 +18,8 @@
       "task": "Riset pustaka buku"
     },
     "data": {
-      "state": "working",
-      "task": "menyiapkan bahan buku"
+      "state": "idle",
+      "task": "bahan buku siap"
     },
     "aidigest": {
       "state": "idle",
