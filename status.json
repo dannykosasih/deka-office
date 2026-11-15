@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-14T21:30:27+07:00",
+  "updated": "2026-11-15T20:18:21+08:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -18,8 +18,8 @@
       "task": "Book sources verified"
     },
     "data": {
-      "state": "idle",
-      "task": "verifikasi selesai"
+      "state": "working",
+      "task": "verifikasi bab baru"
     },
     "aidigest": {
       "state": "idle",
