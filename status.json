@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-16T12:06:17+07:00",
+  "updated": "2026-11-16T12:09:22+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -14,8 +14,8 @@
       "task": "standing by"
     },
     "research": {
-      "state": "working",
-      "task": "Researching thinking frameworks"
+      "state": "idle",
+      "task": "Thinking frameworks researched"
     },
     "data": {
       "state": "idle",
