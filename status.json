@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-17T05:47:55+07:00",
+  "updated": "2026-11-18T05:52:52+07:00",
   "bots": {
     "danny": {
       "state": "working",
@@ -18,8 +18,8 @@
       "task": "Standing by"
     },
     "data": {
-      "state": "idle",
-      "task": "verifikasi selesai"
+      "state": "working",
+      "task": "verifikasi bab"
     },
     "aidigest": {
       "state": "idle",
